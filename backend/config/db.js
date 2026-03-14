@@ -1,20 +1,19 @@
-const mysql = require('mysql2/promise');
+const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-// Tạo Connection Pool để tối ưu hiệu suất
-const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '12345678',
-  database: process.env.DB_NAME || 'order_table_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'order_table_db',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || '12345678',
+  {
+    host: process.env.DB_HOST || 'localhost',
+    dialect: 'mysql',
+    logging: false
+  }
+);
 
-// Kiểm tra kết nối khi khởi động
-db.getConnection()
-  .then(() => console.log('✅ Kết nối MySQL thành công!'))
-  .catch(err => console.error('❌ Kết nối MySQL thất bại:', err));
+sequelize.authenticate()
+  .then(() => console.log('✅ Sequelize kết nối MySQL thành công!'))
+  .catch(err => console.error('❌ Sequelize kết nối thất bại:', err));
 
-module.exports = db;
+module.exports = sequelize;
