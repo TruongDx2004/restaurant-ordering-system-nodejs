@@ -32,71 +32,23 @@ Backend technologies used:
 ```
 backend
 │
-├── src
-│
-├── config
-│   ├── db.js
-│   ├── cors.js
-│   └── jwt.js
-│
-├── schemas
-│   ├── user.model.js
-│   ├── category.model.js
-│   ├── dish.model.js
-│   ├── table.model.js
-│   ├── invoice.model.js
-│   ├── invoiceItem.model.js
-│   ├── payment.model.js
-│   ├── notification.model.js
-│   └── message.model.js
+├── bin
+│   └── www
 │
 ├── controllers
-│   ├── auth.controller.js
-│   ├── user.controller.js
-│   ├── category.controller.js
-│   ├── dish.controller.js
-│   ├── table.controller.js
-│   ├── invoice.controller.js
-│   ├── payment.controller.js
-│   └── message.controller.js
 │
-├── services
-│   ├── auth.service.js
-│   ├── user.service.js
-│   ├── category.service.js
-│   ├── dish.service.js
-│   ├── table.service.js
-│   ├── invoice.service.js
-│   ├── payment.service.js
-│   └── message.service.js
+├── node_modules
 │
 ├── routes
-│   ├── auth.routes.js
-│   ├── user.routes.js
-│   ├── category.routes.js
-│   ├── dish.routes.js
-│   ├── table.routes.js
-│   ├── invoice.routes.js
-│   ├── payment.routes.js
-│   └── message.routes.js
 │
-├── middlewares
-│   ├── auth.middleware.js
-│   ├── error.middleware.js
-│   └── validation.middleware.js
+├── schemas
 │
 ├── utils
-│   ├── constant.js
-│   ├── authHandler.js
-│   ├── mailHandler.js
-│   ├── messageHandler.js
-│   └── validation.js
 │
-├── socket
-│   └── socket.js
-│
+├── .gitignore
 ├── app.js
-└── server.js
+├── package.json
+└── package-lock.json
 ```
 
 ---
