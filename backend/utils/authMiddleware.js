@@ -1,7 +1,5 @@
-const jwt = require("jsonwebtoken");
 const responseHandler = require("../utils/responseHandler");
-
-const SECRET = "restaurant_secret";
+const jwtUtil = require("./authHandler");
 
 exports.verifyToken = (req, res, next) => {
 
@@ -14,31 +12,20 @@ exports.verifyToken = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-
-    const decoded = jwt.verify(token, SECRET);
-
+    const decoded = jwtUtil.verify(token);
     req.user = decoded;
-
     next();
-
   } catch (err) {
-
     return responseHandler.error(res, "Invalid token", 403);
-
   }
-
 };
 
-exports.requireRole = (role) => {
-
+// hỗ trợ nhiều role
+exports.requireRole = (...roles) => {
   return (req, res, next) => {
-
-    if (req.user.role !== role) {
+    if (!roles.includes(req.user.role)) {
       return responseHandler.error(res, "Forbidden", 403);
     }
-
     next();
-
   };
-
 };
