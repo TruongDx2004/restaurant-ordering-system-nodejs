@@ -11,7 +11,7 @@ router.put("/:id", verifyToken, requireRole("ADMIN"), categoryController.updateC
 
 router.delete("/:id", verifyToken, requireRole("ADMIN"), categoryController.deleteCategory);
 
-// ===== AUTHENTICATED =====
+// ===== PUBLIC =====
 router.get("/", categoryController.getAllCategories);
 
 router.get("/name/:name", categoryController.getCategoryByName);
