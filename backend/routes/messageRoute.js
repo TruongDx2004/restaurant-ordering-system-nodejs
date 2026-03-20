@@ -7,9 +7,9 @@ const { verifyToken, requireRole } = require("../utils/authMiddleware");
 /**
  * ADMIN
  */
-router.post("/", verifyToken, requireRole("ADMIN"), messageController.createMessage);
-router.put("/:id", verifyToken, requireRole("ADMIN"), messageController.updateMessage);
-router.delete("/:id", verifyToken, requireRole("ADMIN"), messageController.deleteMessage);
+router.post("/", verifyToken, messageController.createMessage);
+router.put("/:id", verifyToken, messageController.updateMessage);
+router.delete("/:id", verifyToken, messageController.deleteMessage);
 
 /**
  * AUTH USER
