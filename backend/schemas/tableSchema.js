@@ -32,31 +32,11 @@ const Table = sequelize.define(
             allowNull: false,
             field: "is_active",
             defaultValue: true
-        },
-
-        createdAt: {
-            type: DataTypes.DATE,
-            field: "created_at",
-            defaultValue: DataTypes.NOW
-        },
-
-        updatedAt: {
-            type: DataTypes.DATE,
-            field: "updated_at"
         }
     },
     {
         tableName: "tables",
         timestamps: false,
-
-        hooks: {
-            beforeCreate: (table) => {
-                table.createdAt = new Date();
-            },
-            beforeUpdate: (table) => {
-                table.updatedAt = new Date();
-            }
-        }
     }
 );
 
