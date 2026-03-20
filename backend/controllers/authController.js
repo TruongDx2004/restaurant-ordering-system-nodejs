@@ -4,6 +4,11 @@ const User = require("../schemas/userSchema");
 const authHandler = require("../utils/authHandler");
 const responseHandler = require("../utils/responseHandler");
 
+// remove password
+const sanitizeUser = (user) => {
+  const { password, refreshToken, ...rest } = user.toJSON();
+  return rest;
+};
 
 // ================= REGISTER =================
 exports.register = async (req, res, next) => {
@@ -46,36 +51,33 @@ exports.register = async (req, res, next) => {
 
 // ================= LOGIN =================
 exports.login = async (req, res, next) => {
-
   try {
-
     const { email, password } = req.body;
 
-    const user = await User.findOne({
-      where: { email }
-    });
+    const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return responseHandler.error(res, "User not found", 401);
+      return responseHandler.error(res, "User not found", 404);
     }
 
-    const match = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!match) {
-      return responseHandler.error(res, "Wrong password", 401);
+    if (!isMatch) {
+      return responseHandler.error(res, "Invalid password", 401);
     }
 
     const accessToken = authHandler.generateAccessToken(user);
     const refreshToken = authHandler.generateRefreshToken(user);
 
-    user.refreshToken = refreshToken;
-    await user.save();
+    // lưu refresh token (giống Java)
+    await user.update({ refreshToken });
 
     return responseHandler.success(
       res,
       {
-        accessToken,
-        refreshToken
+        token: accessToken, // 🔥 rename giống Java
+        refreshToken: refreshToken,
+        user: sanitizeUser(user)
       },
       "Login successful"
     );
@@ -83,7 +85,6 @@ exports.login = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-
 };
 
 
