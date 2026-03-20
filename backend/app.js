@@ -10,7 +10,8 @@ var indexRouter = require('./routes/index');
 var authRouter = require("./routes/authRoute");
 var userRouter = require("./routes/userRoute");
 var tableRouter = require("./routes/tableRoute");
-
+var categoryRouter = require("./routes/categoryRoute");
+var dishRouter = require("./routes/dishRoute");
 
 
 var app = express();
@@ -22,7 +23,9 @@ app.set('view engine', 'ejs');
 app.use(corsConfig);
 
 app.use(logger('dev'));
-app.use(express.json());
+app.use(express.json({
+  strict: false
+}));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -31,6 +34,8 @@ app.use('/', indexRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/tables", require("./routes/tableRoute"));
+app.use("/api/categories", categoryRouter);
+app.use("/api/dishes", dishRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
