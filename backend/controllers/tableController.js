@@ -1,154 +1,200 @@
 const Table = require("../schemas/tableSchema");
-const ApiResponse = require("../utils/responseHandler");
+const responseHandler = require("../utils/responseHandler");
 
-// CREATE
-const createTable = async (req, res) => {
-    try {
-        const table = await Table.create(req.body);
-        res.status(201).json(ApiResponse.success(table, "Table created"));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
-    }
+// ================= CREATE =================
+exports.createTable = async (req, res, next) => {
+  try {
+    const table = await Table.create(req.body);
+
+    return responseHandler.success(
+      res,
+      table,
+      "Table created successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// GET ALL
-const getAllTables = async (req, res) => {
-    try {
-        const tables = await Table.findAll();
-        res.json(ApiResponse.success(tables));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
-    }
+// ================= GET ALL =================
+exports.getAllTables = async (req, res, next) => {
+  try {
+    const tables = await Table.findAll();
+
+    return responseHandler.success(
+      res,
+      tables,
+      "Tables retrieved successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// GET BY ID
-const getTableById = async (req, res) => {
-    try {
-        const table = await Table.findByPk(req.params.id);
+// ================= GET BY ID =================
+exports.getTableById = async (req, res, next) => {
+  try {
+    const table = await Table.findByPk(req.params.id);
 
-        if (!table) {
-            return res.status(404).json(ApiResponse.error("Table not found"));
-        }
-
-        res.json(ApiResponse.success(table));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
+    if (!table) {
+      return responseHandler.error(res, "Table not found", 404);
     }
+
+    return responseHandler.success(
+      res,
+      table,
+      "Table retrieved successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// UPDATE
-const updateTable = async (req, res) => {
-    try {
-        const table = await Table.findByPk(req.params.id);
+// ================= UPDATE =================
+exports.updateTable = async (req, res, next) => {
+  try {
+    const table = await Table.findByPk(req.params.id);
 
-        if (!table) {
-            return res.status(404).json(ApiResponse.error("Table not found"));
-        }
-
-        await table.update(req.body);
-
-        res.json(ApiResponse.success(table, "Updated"));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
+    if (!table) {
+      return responseHandler.error(res, "Table not found", 404);
     }
+
+    await table.update(req.body);
+
+    return responseHandler.success(
+      res,
+      table,
+      "Table updated successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// DELETE
-const deleteTable = async (req, res) => {
-    try {
-        const table = await Table.findByPk(req.params.id);
+// ================= DELETE =================
+exports.deleteTable = async (req, res, next) => {
+  try {
+    const table = await Table.findByPk(req.params.id);
 
-        if (!table) {
-            return res.status(404).json(ApiResponse.error("Table not found"));
-        }
-
-        await table.destroy();
-
-        res.json(ApiResponse.success(null, "Deleted"));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
+    if (!table) {
+      return responseHandler.error(res, "Table not found", 404);
     }
+
+    await table.destroy();
+
+    return responseHandler.success(
+      res,
+      null,
+      "Table deleted successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// GET BY NUMBER
-const getTableByNumber = async (req, res) => {
-    try {
-        const table = await Table.findOne({
-            where: { tableNumber: req.params.tableNumber }
-        });
+// ================= GET BY NUMBER =================
+exports.getTableByNumber = async (req, res, next) => {
+  try {
+    const table = await Table.findOne({
+      where: { tableNumber: req.params.tableNumber }
+    });
 
-        res.json(ApiResponse.success(table));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
-    }
+    return responseHandler.success(
+      res,
+      table,
+      "Table retrieved successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// GET BY STATUS
-const getTablesByStatus = async (req, res) => {
-    try {
-        const tables = await Table.findAll({
-            where: { status: req.params.status }
-        });
+// ================= GET BY STATUS =================
+exports.getTablesByStatus = async (req, res, next) => {
+  try {
+    const tables = await Table.findAll({
+      where: { status: req.params.status }
+    });
 
-        res.json(ApiResponse.success(tables));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
-    }
+    return responseHandler.success(
+      res,
+      tables,
+      "Tables retrieved successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// GET BY AREA
-const getTablesByArea = async (req, res) => {
-    try {
-        const tables = await Table.findAll({
-            where: { area: req.params.area }
-        });
+// ================= GET BY AREA =================
+exports.getTablesByArea = async (req, res, next) => {
+  try {
+    const tables = await Table.findAll({
+      where: { area: req.params.area }
+    });
 
-        res.json(ApiResponse.success(tables));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
-    }
+    return responseHandler.success(
+      res,
+      tables,
+      "Tables retrieved successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// UPDATE STATUS
-const updateTableStatus = async (req, res) => {
-    try {
-        const table = await Table.findByPk(req.params.id);
+// ================= UPDATE STATUS =================
+exports.updateTableStatus = async (req, res, next) => {
+  try {
+    const table = await Table.findByPk(req.params.id);
 
-        if (!table) {
-            return res.status(404).json(ApiResponse.error("Table not found"));
-        }
-
-        table.status = req.query.status;
-        await table.save();
-
-        res.json(ApiResponse.success(table, "Status updated"));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
+    if (!table) {
+      return responseHandler.error(res, "Table not found", 404);
     }
+
+    let { status } = req.query;
+
+    if (!status) {
+      return responseHandler.error(res, "Status is required", 400);
+    }
+
+    status = status.toUpperCase().trim();
+
+    await table.update({ status });
+
+    return responseHandler.success(
+      res,
+      table,
+      "Table status updated successfully"
+    );
+
+  } catch (err) {
+    next(err);
+  }
 };
 
-// GET ACTIVE
-const getActiveTables = async (req, res) => {
-    try {
-        const tables = await Table.findAll({
-            where: { isActive: true }
-        });
+// ================= GET ACTIVE =================
+exports.getActiveTables = async (req, res, next) => {
+  try {
+    const tables = await Table.findAll({
+      where: { isActive: true }
+    });
 
-        res.json(ApiResponse.success(tables));
-    } catch (err) {
-        res.status(500).json(ApiResponse.error(err.message));
-    }
-};
+    return responseHandler.success(
+      res,
+      tables,
+      "Active tables retrieved successfully"
+    );
 
-module.exports = {
-    createTable,
-    getAllTables,
-    getTableById,
-    updateTable,
-    deleteTable,
-    getTableByNumber,
-    getTablesByStatus,
-    getTablesByArea,
-    updateTableStatus,
-    getActiveTables
+  } catch (err) {
+    next(err);
+  }
 };
