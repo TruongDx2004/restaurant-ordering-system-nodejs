@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/invoice.controller");
+const controller = require("../controllers/invoiceController");
 const { verifyToken, requireRole } = require("../utils/authMiddleware");
 
 // ================= PUBLIC =================
