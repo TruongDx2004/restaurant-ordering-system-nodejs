@@ -33,7 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
-app.use("/api/tables", require("./routes/tableRoute"));
+app.use("/api/tables", tableRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/dishes", dishRouter);
 
