@@ -66,8 +66,8 @@ exports.login = async (req, res, next) => {
       return responseHandler.error(res, "Invalid password", 401);
     }
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const accessToken = authHandler.generateAccessToken(user);
+    const refreshToken = authHandler.generateRefreshToken(user);
 
     // lưu refresh token (giống Java)
     await user.update({ refreshToken });
