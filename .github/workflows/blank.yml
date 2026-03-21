@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: 18
 
+      - run: cd backend
       - run: npm install
       - run: npm test
 
