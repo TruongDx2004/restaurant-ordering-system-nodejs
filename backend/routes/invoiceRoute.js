@@ -7,6 +7,8 @@ const { verifyToken, requireRole } = require("../utils/authMiddleware");
 // ================= PUBLIC =================
 // khách (có hoặc không login) đều tạo được
 router.post("/", controller.createInvoice);
+router.post("/create-with-items",controller.createInvoiceWithItems);
+router.get("/table-number/:tableNumber/active", controller.getActiveInvoiceByTableNumber);
 
 // ================= AUTH =================
 // nhân viên + admin
