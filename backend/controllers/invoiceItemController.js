@@ -1,4 +1,4 @@
-const InvoiceItem = require("../schemas/invoiceItemSchema");
+const { Dish, InvoiceItem, Category } = require("../schemas")
 const responseHandler = require("../utils/responseHandler");
 
 // ===== mapper =====
@@ -7,12 +7,29 @@ const toResponse = (item) => ({
   invoiceId: item.invoiceId,
   dishId: item.dishId,
   quantity: item.quantity,
-  unitPrice: item.unitPrice,
-  totalPrice: item.totalPrice,
+  unitPrice: Number(item.unitPrice),
+  totalPrice: Number(item.totalPrice),
   status: item.status,
   note: item.note,
   createdAt: item.createdAt,
-  updatedAt: item.updatedAt
+  updatedAt: item.updatedAt,
+
+  // 👇 thêm phần trả về đầy đủ
+  dish: item.dish
+    ? {
+      id: item.dish.id,
+      name: item.dish.name,
+      price: Number(item.dish.price),
+      image: item.dish.image,
+      status: item.dish.status,
+      category: item.dish.category
+        ? {
+          id: item.dish.category.id,
+          name: item.dish.category.name
+        }
+        : null
+    }
+    : null
 });
 
 // ================= CREATE =================
@@ -40,7 +57,20 @@ exports.createInvoiceItem = async (req, res, next) => {
 // ================= GET BY ID =================
 exports.getInvoiceItemById = async (req, res, next) => {
   try {
-    const item = await InvoiceItem.findByPk(req.params.id);
+    const item = await InvoiceItem.findByPk(req.params.id, {
+      include: [
+        {
+          model: Dish,
+          as: "dish",
+          include: [
+            {
+              model: Category,
+              as: "category"
+            }
+          ]
+        }
+      ]
+    });
 
     if (!item) {
       return responseHandler.error(res, "Invoice item not found", 404);
@@ -55,7 +85,20 @@ exports.getInvoiceItemById = async (req, res, next) => {
 // ================= GET ALL =================
 exports.getAllInvoiceItems = async (req, res, next) => {
   try {
-    const items = await InvoiceItem.findAll();
+    const items = await InvoiceItem.findAll({
+      include: [
+        {
+          model: Dish,
+          as: "dish",
+          include: [
+            {
+              model: Category,
+              as: "category"
+            }
+          ]
+        }
+      ]
+    });
 
     return responseHandler.success(
       res,
@@ -113,10 +156,26 @@ exports.deleteInvoiceItem = async (req, res, next) => {
 exports.getInvoiceItemsByInvoice = async (req, res, next) => {
   try {
     const items = await InvoiceItem.findAll({
-      where: { invoiceId: req.params.invoiceId }
+      where: { invoiceId: req.params.invoiceId },
+      include: [
+        {
+          model: Dish,
+          as: "dish",
+          include: [
+            {
+              model: Category,
+              as: "category"
+            }
+          ]
+        }
+      ]
     });
 
-    return responseHandler.success(res, items.map(toResponse), "Retrieved successfully");
+    return responseHandler.success(
+      res,
+      items.map(toResponse),
+      "Retrieved successfully"
+    );
   } catch (err) {
     next(err);
   }
@@ -126,10 +185,26 @@ exports.getInvoiceItemsByInvoice = async (req, res, next) => {
 exports.getInvoiceItemsByDish = async (req, res, next) => {
   try {
     const items = await InvoiceItem.findAll({
-      where: { dishId: req.params.dishId }
+      where: { dishId: req.params.dishId },
+      include: [
+        {
+          model: Dish,
+          as: "dish",
+          include: [
+            {
+              model: Category,
+              as: "category"
+            }
+          ]
+        }
+      ]
     });
 
-    return responseHandler.success(res, items.map(toResponse), "Retrieved successfully");
+    return responseHandler.success(
+      res,
+      items.map(toResponse),
+      "Retrieved successfully"
+    );
   } catch (err) {
     next(err);
   }
@@ -169,8 +244,13 @@ exports.addItemToInvoice = async (req, res, next) => {
       return responseHandler.error(res, "Quantity must be > 0", 400);
     }
 
-    // ⚠️ chưa join Dish nên tạm unitPrice = 0
-    const unitPrice = 0;
+    const dish = await Dish.findByPk(dishId);
+
+    if (!dish) {
+      return responseHandler.error(res, "Dish not found", 404);
+    }
+
+    const unitPrice = dish.price;
     const totalPrice = unitPrice * quantity;
 
     const item = await InvoiceItem.create({

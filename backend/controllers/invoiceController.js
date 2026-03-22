@@ -7,13 +7,13 @@ const sequelize = require("../config/db");
 const toResponse = (invoice) => ({
     id: invoice.id,
 
-    table: invoice.Table
+    table: invoice.table
         ? {
-            id: invoice.Table.id,
-            tableNumber: invoice.Table.tableNumber,
-            area: invoice.Table.area,
-            status: invoice.Table.status,
-            isActive: invoice.Table.isActive
+            id: invoice.table.id,
+            tableNumber: invoice.table.tableNumber,
+            area: invoice.table.area,
+            status: invoice.table.status,
+            isActive: invoice.table.isActive
         }
         : null,
 
@@ -26,17 +26,18 @@ const toResponse = (invoice) => ({
         ? invoice.items.map(item => ({
             id: item.id,
 
-            dish: item.Dish
+            dish: item.dish
                 ? {
-                    id: item.Dish.id,
-                    name: item.Dish.name,
-                    price: item.Dish.price,
-                    status: item.Dish.status,
-                    image: item.Dish.image,
-                    category: item.Dish.Category
+                    id: item.dish.id,
+                    name: item.dish.name,
+                    price: Number(item.dish.price),
+                    status: item.dish.status,
+                    image: item.dish.image,
+
+                    category: item.dish.category
                         ? {
-                            id: item.Dish.Category.id,
-                            name: item.Dish.Category.name
+                            id: item.dish.category.id,
+                            name: item.dish.category.name
                         }
                         : null
                 }
@@ -75,14 +76,23 @@ exports.getInvoiceById = async (req, res, next) => {
     try {
         const invoice = await Invoice.findByPk(req.params.id, {
             include: [
-                { model: Table },
+                {
+                    model: Table,
+                    as: "table"
+                },
                 {
                     model: InvoiceItem,
                     as: "items",
                     include: [
                         {
                             model: Dish,
-                            include: [Category]
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -110,7 +120,8 @@ exports.getAllInvoices = async (req, res, next) => {
         const invoices = await Invoice.findAll({
             include: [
                 {
-                    model: Table
+                    model: Table,
+                    as: "table"
                 },
                 {
                     model: InvoiceItem,
@@ -118,7 +129,13 @@ exports.getAllInvoices = async (req, res, next) => {
                     include: [
                         {
                             model: Dish,
-                            include: [Category]
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -321,6 +338,7 @@ exports.getActiveInvoiceByTableNumber = async (req, res, next) => {
             include: [
                 {
                     model: Table,
+                    as: "table",
                     where: { tableNumber }
                 },
                 {
@@ -329,7 +347,13 @@ exports.getActiveInvoiceByTableNumber = async (req, res, next) => {
                     include: [
                         {
                             model: Dish,
-                            include: [Category]
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -453,14 +477,23 @@ exports.createInvoiceWithItems = async (req, res, next) => {
         // reload full data giống Java
         const fullInvoice = await Invoice.findByPk(invoice.id, {
             include: [
-                { model: Table },
+                {
+                    model: Table,
+                    as: "table"
+                },
                 {
                     model: InvoiceItem,
                     as: "items",
                     include: [
                         {
                             model: Dish,
-                            include: [Category]
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
                         }
                     ]
                 }
