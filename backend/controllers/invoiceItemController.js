@@ -1,5 +1,6 @@
-const { Dish, InvoiceItem, Category } = require("../schemas")
+const { Dish, InvoiceItem, Category, Invoice } = require("../schemas")
 const responseHandler = require("../utils/responseHandler");
+const sequelize = require("../config/db");
 
 // ===== mapper =====
 const toResponse = (item) => ({
@@ -269,25 +270,78 @@ exports.addItemToInvoice = async (req, res, next) => {
 
 // ================= UPDATE STATUS =================
 exports.updateStatus = async (req, res, next) => {
+  const t = await sequelize.transaction();
   try {
     let { status } = req.query;
+    status = status.toUpperCase().trim();
 
-    const item = await InvoiceItem.findByPk(req.params.id);
+    const item = await InvoiceItem.findByPk(req.params.id, {
+      include: [{ model: Invoice }],
+      transaction: t
+    });
 
     if (!item) {
+      await t.rollback();
       return responseHandler.error(res, "Invoice item not found", 404);
     }
 
-    status = status.toUpperCase().trim();
-
-    if (item.status === "SERVED" || item.status === "CANCELLED") {
-      return responseHandler.error(res, "Cannot update this item", 400);
+    // ❗ Validate flow
+    if (item.status === "SERVED") {
+      await t.rollback();
+      return responseHandler.error(res, "Cannot update a served item", 400);
     }
 
-    await item.update({ status });
+    if (item.status === "CANCELLED") {
+      await t.rollback();
+      return responseHandler.error(res, "Cannot update a cancelled item", 400);
+    }
 
-    return responseHandler.success(res, toResponse(item), "Status updated");
+    const oldStatus = item.status;
+
+    // update item
+    await item.update(
+      {
+        status,
+        updatedAt: new Date()
+      },
+      { transaction: t }
+    );
+
+    // ================= BUSINESS LOGIC =================
+    // Nếu chuyển sang CANCELLED thì trừ tiền invoice
+    if (status === "CANCELLED" && oldStatus !== "CANCELLED") {
+      const invoice = item.Invoice;
+
+      if (invoice) {
+        let currentTotal = invoice.totalAmount || 0;
+        let itemPrice = item.totalPrice || 0;
+
+        let newTotal = currentTotal - itemPrice;
+
+        // đảm bảo không âm
+        if (newTotal < 0) newTotal = 0;
+
+        await invoice.update(
+          { totalAmount: newTotal },
+          { transaction: t }
+        );
+      }
+    }
+
+    await t.commit();
+
+    // // ================= WEBSOCKET =================
+    // if (item.Invoice) {
+    //   webSocketService.sendInvoiceItemStatusUpdate(
+    //     item.Invoice.id,
+    //     item.id,
+    //     status
+    //   );
+    // }
+
+    return responseHandler.success(res, item, "Status updated");
   } catch (err) {
+    await t.rollback();
     next(err);
   }
 };
