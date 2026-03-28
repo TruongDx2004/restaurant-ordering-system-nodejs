@@ -1,18 +1,19 @@
 const { Invoice, Table, InvoiceItem, Dish, Category } = require("../schemas");
 const responseHandler = require("../utils/responseHandler");
 const { Op } = require("sequelize");
+const sequelize = require("../config/db");
 
 // ===== MAPPER =====
 const toResponse = (invoice) => ({
     id: invoice.id,
 
-    table: invoice.Table
+    table: invoice.table
         ? {
-            id: invoice.Table.id,
-            tableNumber: invoice.Table.tableNumber,
-            area: invoice.Table.area,
-            status: invoice.Table.status,
-            isActive: invoice.Table.isActive
+            id: invoice.table.id,
+            tableNumber: invoice.table.tableNumber,
+            area: invoice.table.area,
+            status: invoice.table.status,
+            isActive: invoice.table.isActive
         }
         : null,
 
@@ -25,17 +26,18 @@ const toResponse = (invoice) => ({
         ? invoice.items.map(item => ({
             id: item.id,
 
-            dish: item.Dish
+            dish: item.dish
                 ? {
-                    id: item.Dish.id,
-                    name: item.Dish.name,
-                    price: item.Dish.price,
-                    status: item.Dish.status,
-                    image: item.Dish.image,
-                    category: item.Dish.Category
+                    id: item.dish.id,
+                    name: item.dish.name,
+                    price: Number(item.dish.price),
+                    status: item.dish.status,
+                    image: item.dish.image,
+
+                    category: item.dish.category
                         ? {
-                            id: item.Dish.Category.id,
-                            name: item.Dish.Category.name
+                            id: item.dish.category.id,
+                            name: item.dish.category.name
                         }
                         : null
                 }
@@ -74,14 +76,23 @@ exports.getInvoiceById = async (req, res, next) => {
     try {
         const invoice = await Invoice.findByPk(req.params.id, {
             include: [
-                { model: Table },
+                {
+                    model: Table,
+                    as: "table"
+                },
                 {
                     model: InvoiceItem,
                     as: "items",
                     include: [
                         {
                             model: Dish,
-                            include: [Category]
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -109,7 +120,8 @@ exports.getAllInvoices = async (req, res, next) => {
         const invoices = await Invoice.findAll({
             include: [
                 {
-                    model: Table
+                    model: Table,
+                    as: "table"
                 },
                 {
                     model: InvoiceItem,
@@ -117,7 +129,13 @@ exports.getAllInvoices = async (req, res, next) => {
                     include: [
                         {
                             model: Dish,
-                            include: [Category]
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -291,20 +309,6 @@ exports.getActiveInvoiceByTable = async (req, res, next) => {
     }
 };
 
-// GET ACTIVE BY TABLE NUMBER (simplified)
-exports.getActiveInvoiceByTableNumber = async (req, res, next) => {
-    try {
-        // NOTE: cần join Table nếu muốn đúng như Java
-        return responseHandler.success(
-            res,
-            null,
-            "Not implemented fully (requires join with table)"
-        );
-    } catch (err) {
-        next(err);
-    }
-};
-
 // CALCULATE TOTAL (basic version)
 exports.calculateInvoiceTotal = async (req, res, next) => {
     try {
@@ -320,6 +324,190 @@ exports.calculateInvoiceTotal = async (req, res, next) => {
             "Invoice total calculated successfully"
         );
     } catch (err) {
+        next(err);
+    }
+};
+
+//Get INVOICE By TableNumber
+exports.getActiveInvoiceByTableNumber = async (req, res, next) => {
+    try {
+        const { tableNumber } = req.params;
+
+        const invoice = await Invoice.findOne({
+            where: { status: "OPEN" },
+            include: [
+                {
+                    model: Table,
+                    as: "table",
+                    where: { tableNumber }
+                },
+                {
+                    model: InvoiceItem,
+                    as: "items",
+                    include: [
+                        {
+                            model: Dish,
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        });
+
+        return responseHandler.success(
+            res,
+            invoice ? toResponse(invoice) : null,
+            "Active invoice retrieved successfully"
+        );
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+//Create InvoiceItem
+exports.createInvoiceWithItems = async (req, res, next) => {
+    const t = await sequelize.transaction();
+
+    try {
+        const { tableId, items } = req.body;
+
+        const table = await Table.findByPk(tableId, { transaction: t });
+
+        if (!table) {
+            throw new Error("Table not found");
+        }
+
+        let invoice = null;
+
+        // ===== CASE 1: TABLE AVAILABLE =====
+        if (table.status === "AVAILABLE") {
+            invoice = await Invoice.create({
+                tableId,
+                status: "OPEN",
+                totalAmount: 0
+            }, { transaction: t });
+
+            await table.update({ status: "OCCUPIED" }, { transaction: t });
+        }
+
+        // ===== CASE 2: TABLE OCCUPIED =====
+        else if (table.status === "OCCUPIED") {
+            invoice = await Invoice.findOne({
+                where: {
+                    tableId,
+                    status: "OPEN"
+                },
+                include: [{ model: InvoiceItem, as: "items" }],
+                transaction: t
+            });
+
+            if (!invoice) {
+                throw new Error("Table occupied but no active invoice");
+            }
+        }
+
+        // ===== CASE 3: INVALID =====
+        else {
+            throw new Error("Table not available");
+        }
+
+        let totalAmount = Number(invoice.totalAmount);
+
+        for (const item of items) {
+            const dish = await Dish.findByPk(item.dishId, { transaction: t });
+
+            if (!dish) {
+                throw new Error(`Dish not found: ${item.dishId}`);
+            }
+
+            const unitPrice = Number(dish.price);
+            const quantity = item.quantity;
+
+            // check existing item
+            let existingItem = await InvoiceItem.findOne({
+                where: {
+                    invoiceId: invoice.id,
+                    dishId: item.dishId,
+                    status: item.status || "WAITING"
+                },
+                transaction: t
+            });
+
+            if (existingItem) {
+                const newQuantity = existingItem.quantity + quantity;
+                const newTotal = newQuantity * unitPrice;
+
+                totalAmount -= Number(existingItem.totalPrice);
+
+                await existingItem.update({
+                    quantity: newQuantity,
+                    totalPrice: newTotal
+                }, { transaction: t });
+
+                totalAmount += newTotal;
+
+            } else {
+                const totalPrice = unitPrice * quantity;
+
+                await InvoiceItem.create({
+                    invoiceId: invoice.id,
+                    dishId: item.dishId,
+                    quantity,
+                    unitPrice,
+                    totalPrice,
+                    status: item.status || "WAITING",
+                    note: item.note || ""
+                }, { transaction: t });
+
+                totalAmount += totalPrice;
+            }
+        }
+
+        await invoice.update({ totalAmount }, { transaction: t });
+
+        await t.commit();
+
+        // reload full data giống Java
+        const fullInvoice = await Invoice.findByPk(invoice.id, {
+            include: [
+                {
+                    model: Table,
+                    as: "table"
+                },
+                {
+                    model: InvoiceItem,
+                    as: "items",
+                    include: [
+                        {
+                            model: Dish,
+                            as: "dish",
+                            include: [
+                                {
+                                    model: Category,
+                                    as: "category"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        });
+
+        return responseHandler.success(
+            res,
+            toResponse(fullInvoice),
+            "Invoice with items created successfully"
+        );
+
+    } catch (err) {
+        await t.rollback();
         next(err);
     }
 };
