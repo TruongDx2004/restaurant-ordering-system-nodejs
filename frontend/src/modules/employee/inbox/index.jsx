@@ -14,6 +14,7 @@ const EmployeeInbox = () => {
     messages,
     loading,
     sending,
+    markAsRead,
     sendMessage,
     refreshChat
   } = useEmployeeInbox();
@@ -32,7 +33,7 @@ const EmployeeInbox = () => {
     }
   }, [messages]);
 
-  const filteredConversations = conversations.filter(conv => 
+  const filteredConversations = conversations.filter(conv =>
     conv.tableNumber.toString().includes(searchTerm)
   );
 
@@ -48,6 +49,11 @@ const EmployeeInbox = () => {
 
   const handleQuickReply = (text) => {
     setInputValue(text);
+  };
+
+  const handleSelectTable = (conv) => {
+    setActiveTable(conv);
+    markAsRead(conv.id);
   };
 
   const formatTime = (dateString) => {
@@ -72,9 +78,9 @@ const EmployeeInbox = () => {
           <h1 className={styles.sidebarTitle}>Hội thoại</h1>
           <div className={styles.searchWrapper}>
             <i className={`fas fa-search ${styles.searchIcon}`}></i>
-            <input 
-              type="text" 
-              placeholder="Tìm số bàn..." 
+            <input
+              type="text"
+              placeholder="Tìm số bàn..."
               className={styles.searchInput}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -93,10 +99,10 @@ const EmployeeInbox = () => {
             </div>
           ) : (
             filteredConversations.map(conv => (
-              <div 
-                key={conv.id} 
+              <div
+                key={conv.id}
                 className={`${styles.conversationItem} ${activeTable?.id === conv.id ? styles.activeItem : ''}`}
-                onClick={() => setActiveTable(conv)}
+                onClick={() => handleSelectTable(conv)}
               >
                 <div className={styles.tableAvatar}>{conv.tableNumber}</div>
                 <div className={styles.itemInfo}>
@@ -124,7 +130,7 @@ const EmployeeInbox = () => {
             {/* Chat Header */}
             <header className={styles.chatHeader}>
               <div className={styles.activeUserInfo}>
-                <button 
+                <button
                   className={styles.mobileBack}
                   onClick={() => setActiveTable(null)}
                 >
@@ -163,19 +169,17 @@ const EmployeeInbox = () => {
                 messages.map((msg, idx) => {
                   const isStaff = msg.sender === 'STAFF';
                   const isSystem = msg.sender === 'SYSTEM';
-                  
+
                   return (
-                    <div 
-                      key={msg.id || idx} 
-                      className={`${styles.messageRow} ${
-                        isStaff ? styles.myMessageRow : 
+                    <div
+                      key={msg.id || idx}
+                      className={`${styles.messageRow} ${isStaff ? styles.myMessageRow :
                         isSystem ? styles.systemRow : styles.theirMessageRow
-                      }`}
+                        }`}
                     >
-                      <div className={`${styles.messageBubble} ${
-                        isStaff ? styles.myBubble : 
+                      <div className={`${styles.messageBubble} ${isStaff ? styles.myBubble :
                         isSystem ? styles.systemBubble : styles.theirBubble
-                      }`}>
+                        }`}>
                         {msg.content}
                         <div className={styles.msgTime}>{formatTime(msg.createdAt)}</div>
                       </div>
@@ -189,8 +193,8 @@ const EmployeeInbox = () => {
             <div className={styles.inputArea}>
               <div className={styles.quickReplies}>
                 {quickReplies.map((reply, idx) => (
-                  <button 
-                    key={idx} 
+                  <button
+                    key={idx}
                     className={styles.replyBtn}
                     onClick={() => handleQuickReply(reply)}
                   >
@@ -199,16 +203,16 @@ const EmployeeInbox = () => {
                 ))}
               </div>
               <form className={styles.inputWrapper} onSubmit={handleSend}>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className={styles.messageInput}
                   placeholder="Aa"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   disabled={sending}
                 />
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className={styles.sendButton}
                   disabled={!inputValue.trim() || sending}
                 >

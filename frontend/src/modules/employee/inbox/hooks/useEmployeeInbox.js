@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { messageApi, tableApi, invoiceApi } from '../../../../api';
+import { webSocketService } from '../../../../services/webSocketService';
 
 /**
  * Custom hook for employee inbox management
@@ -12,6 +13,7 @@ export const useEmployeeInbox = () => {
   const [loading, setLoading] = useState({ list: true, chat: false });
   const [error, setError] = useState(null);
   const [sending, setSending] = useState(false);
+  const activeTableRef = useRef(activeTable);
 
   /**
    * Fetch all tables that have messages or are active
@@ -46,13 +48,13 @@ export const useEmployeeInbox = () => {
    */
   const fetchMessages = useCallback(async (tableId) => {
     if (!tableId) return;
-    
+
     setLoading(prev => ({ ...prev, chat: true }));
     try {
       const response = await messageApi.getByTableOrdered(tableId);
       if (response.success) {
         // Ensure newest messages are at the bottom (Sort by date ASC)
-        const sortedMessages = (response.data || []).sort((a, b) => 
+        const sortedMessages = (response.data || []).sort((a, b) =>
           new Date(a.createdAt) - new Date(b.createdAt)
         );
         setMessages(sortedMessages);
@@ -65,6 +67,38 @@ export const useEmployeeInbox = () => {
     }
   }, []);
 
+  // Keep ref updated for WebSocket callbacks
+  useEffect(() => {
+    activeTableRef.current = activeTable;
+  }, [activeTable]);
+
+  // WebSocket subscription messages
+  useEffect(() => {
+    console.log('[WebSocket] Subscribing to chat updates for employee inbox');
+    const unsubscribe = webSocketService.subscribe('/topic/employee/chat', (message) => {
+
+      const currentTable = activeTableRef.current;
+      if (message.tableId === currentTable?.id) {
+        fetchMessages(currentTable.id);
+      } else {
+        setConversations(prev => prev.map(conv => {
+          if (conv.id === message.tableId) {
+            return {
+              ...conv,
+              lastMessage: message.content,
+              unreadCount: conv.unreadCount + 1
+            };
+          }
+          return conv;
+        }));
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+
   // Initial fetch only - removed intervals as requested
   useEffect(() => {
     fetchConversations();
@@ -74,7 +108,7 @@ export const useEmployeeInbox = () => {
   useEffect(() => {
     if (activeTable) {
       fetchMessages(activeTable.id);
-      
+
       // Fetch current active invoice to link staff messages
       const getActiveInvoice = async () => {
         try {
@@ -95,6 +129,18 @@ export const useEmployeeInbox = () => {
     }
   }, [activeTable, fetchMessages]);
 
+  /*
+    Update unread count when active table changes - reset to 0 for the selected conversation
+  */
+  const markAsRead = (tableId) => {
+    setConversations(prev =>
+      prev.map(c =>
+        c.id === tableId
+          ? { ...c, unreadCount: 0 }
+          : c
+      )
+    );
+  };
   /**
    * Send message to a table
    */
@@ -112,7 +158,7 @@ export const useEmployeeInbox = () => {
       };
 
       const response = await messageApi.create(messageData);
-      
+
       // Handle ApiResponse structure { success, data, message }
       if (response && response.success && response.data) {
         setMessages(prev => [...prev, response.data]);
@@ -122,7 +168,7 @@ export const useEmployeeInbox = () => {
         setMessages(prev => [...prev, response]);
         return { success: true };
       }
-      
+
       return { success: false, error: 'Phản hồi không hợp lệ' };
     } catch (err) {
       console.error('Error sending message:', err);
@@ -141,6 +187,7 @@ export const useEmployeeInbox = () => {
     error,
     sending,
     sendMessage,
+    markAsRead,
     refreshList: fetchConversations,
     refreshChat: () => fetchMessages(activeTable?.id)
   };

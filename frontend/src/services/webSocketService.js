@@ -16,7 +16,8 @@ class WebSocketService {
       '/topic/table-status': 'table-status',
       '/topic/payments': 'payments',
       '/topic/orders/status': 'order-item-status',
-      '/queue/notifications': 'user-notifications'
+      '/queue/notifications': 'user-notifications',
+      '/topic/employee/chat': 'employee-chat',
     };
     
     // Convert VITE_API_BASE_URL (http://...) to WebSocket URL (ws://...) if needed
