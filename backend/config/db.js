@@ -13,7 +13,7 @@ const sequelize = new Sequelize(
 );
 
 sequelize.authenticate()
-  .then(() => console.log('✅ Sequelize kết nối MySQL thành công!'))
-  .catch(err => console.error('❌ Sequelize kết nối thất bại:', err));
+  .then(() => console.log('[Sequelize] kết nối MySQL thành công'))
+  .catch(err => console.error('[Sequelize] kết nối thất bại:', err));
 
 module.exports = sequelize;

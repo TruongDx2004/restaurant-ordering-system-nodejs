@@ -1,6 +1,7 @@
 const { Dish, InvoiceItem, Category, Invoice } = require("../schemas")
 const responseHandler = require("../utils/responseHandler");
 const sequelize = require("../config/db");
+const webSocketService = require("../utils/webSocketService"); // Import WebSocketService
 
 // ===== mapper =====
 const toResponse = (item) => ({
@@ -330,14 +331,14 @@ exports.updateStatus = async (req, res, next) => {
 
     await t.commit();
 
-    // // ================= WEBSOCKET =================
-    // if (item.Invoice) {
-    //   webSocketService.sendInvoiceItemStatusUpdate(
-    //     item.Invoice.id,
-    //     item.id,
-    //     status
-    //   );
-    // }
+    // ================= WEBSOCKET =================
+    if (item.Invoice) {
+      webSocketService.sendInvoiceItemStatusUpdate(
+        item.Invoice.id,
+        item.id,
+        status
+      );
+    }
 
     return responseHandler.success(res, item, "Status updated");
   } catch (err) {

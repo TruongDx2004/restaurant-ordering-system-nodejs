@@ -1,0 +1,202 @@
+/* InvoiceTable Component Styles */
+
+.tableContainer {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.invoiceTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoiceTable thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.invoiceTable th {
+  padding: 15px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.invoiceTable th:first-child {
+  text-align: center;
+  width: 50px;
+}
+
+.invoiceTable th:nth-child(3),
+.invoiceTable th:nth-child(4),
+.invoiceTable th:nth-child(5) {
+  text-align: right;
+}
+
+.nameWithStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.itemName {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.statusLine {
+  height: 4px;
+  border-radius: 2px;
+  width: 60px;
+  position: relative;
+}
+
+.statusLabel {
+  font-size: 10px;
+  position: absolute;
+  top: 6px;
+  left: 0;
+  white-space: nowrap;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusLine.waiting { background-color: #f39c12; color: #f39c12; }
+.statusLine.preparing { background-color: #e74c3c; color: #e74c3c; }
+.statusLine.served { background-color: #27ae60; color: #27ae60; }
+.statusLine.cancelled { background-color: #95a5a6; color: #95a5a6; }
+
+tr.cancelled {
+  opacity: 0.6;
+}
+
+tr.cancelled .itemName {
+  text-decoration: line-through;
+}
+
+.invoiceTable tbody tr {
+  height: 70px;
+}
+
+.invoiceTable tbody tr {
+  border-bottom: 1px solid #ecf0f1;
+  transition: background-color 0.2s ease;
+}
+
+.invoiceTable tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.invoiceTable tbody tr:last-child {
+  border-bottom: none;
+}
+
+.invoiceTable td {
+  padding: 12px 10px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.stt {
+  text-align: center;
+  font-weight: 600;
+  color: #7f8c8d;
+}
+
+.dishName {
+  font-weight: 500;
+}
+
+.dishInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dishImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.price,
+.quantity,
+.totalPrice {
+  text-align: right;
+}
+
+.quantity {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.totalPrice {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.emptyTable {
+  background: white;
+  border-radius: 12px;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.emptyTable p {
+  color: #7f8c8d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .invoiceTable {
+    font-size: 13px;
+  }
+
+  .invoiceTable th,
+  .invoiceTable td {
+    padding: 10px 8px;
+  }
+
+  .invoiceTable th {
+    font-size: 12px;
+  }
+
+  .dishImage {
+    width: 35px;
+    height: 35px;
+  }
+
+  .dishInfo {
+    gap: 8px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .invoiceTable {
+    font-size: 12px;
+  }
+
+  .invoiceTable th,
+  .invoiceTable td {
+    padding: 8px 5px;
+  }
+
+  .dishImage {
+    display: none;
+  }
+
+  .invoiceTable th:first-child,
+  .stt {
+    width: 35px;
+  }
+}

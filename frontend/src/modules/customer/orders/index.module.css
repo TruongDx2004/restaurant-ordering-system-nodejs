@@ -1,0 +1,396 @@
+/* Orders Page Styles */
+
+/* Container */
+.ordersContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 100px;
+  min-height: 100vh;
+}
+
+/* Header */
+.ordersHeader {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.ordersHeader h1 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+}
+
+.ordersInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.invoiceBadge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.refreshBtn {
+  background: transparent;
+  border: 2px solid #667eea;
+  color: #667eea;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.refreshBtn:hover {
+  background: #667eea;
+  color: white;
+}
+
+.refreshBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Order Items List */
+.orderItems {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+  min-height: 200px;
+}
+
+.emptyStatus {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px dashed #dee2e6;
+  color: #6c757d;
+  font-style: italic;
+}
+
+
+/* Order Summary */
+.orderSummary {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 15px;
+  color: #2c3e50;
+}
+
+.summaryRow:not(:last-child) {
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.summaryRow.total {
+  font-size: 18px;
+  font-weight: 700;
+  color: #667eea;
+  margin-top: 10px;
+  border-bottom: none;
+}
+
+.summaryInfo {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.summaryInfo p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.summaryInfo i {
+  color: #3498db;
+}
+
+/* Empty State */
+.emptyState {
+  background: white;
+  border-radius: 15px;
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.emptyIcon {
+  font-size: 80px;
+  color: #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.emptyState h3 {
+  font-size: 20px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.emptyState p {
+  color: #7f8c8d;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.browseMenuBtn {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.browseMenuBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading State */
+.loading {
+  background: white;
+  border-radius: 15px;
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.loading i {
+  font-size: 48px;
+  color: #667eea;
+  margin-bottom: 20px;
+}
+
+.loading p {
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+/* Error State */
+.error {
+  background: white;
+  border-radius: 15px;
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.error i {
+  font-size: 60px;
+  color: #e74c3c;
+  margin-bottom: 20px;
+}
+
+.error h3 {
+  font-size: 20px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.error p {
+  color: #7f8c8d;
+  margin-bottom: 25px;
+}
+
+.retryBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.retryBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 250px;
+  max-width: 350px;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toastSuccess {
+  border-left: 4px solid #27ae60;
+  color: #27ae60;
+}
+
+.toastError {
+  border-left: 4px solid #e74c3c;
+  color: #e74c3c;
+}
+
+.toastInfo {
+  border-left: 4px solid #3498db;
+  color: #3498db;
+}
+
+.toastWarning {
+  border-left: 4px solid #f39c12;
+  color: #f39c12;
+}
+
+/* Floating Action Button */
+.addMoreBtn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.addMoreBtn:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+}
+
+/* Mobile Only */
+@media (max-width: 768px) {
+  .ordersContainer {
+    padding: 15px;
+    padding-bottom: 80px;
+  }
+
+  .ordersHeader {
+    padding: 15px;
+  }
+
+  .ordersHeader h1 {
+    font-size: 20px;
+  }
+
+  .invoiceBadge {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .orderItems {
+    gap: 12px;
+  }
+
+  .orderSummary {
+    padding: 15px;
+  }
+
+  .summaryRow {
+    font-size: 14px;
+  }
+
+  .summaryRow.total {
+    font-size: 16px;
+  }
+
+  .emptyState,
+  .loading,
+  .error {
+    padding: 40px 20px;
+  }
+
+  .emptyIcon {
+    font-size: 60px;
+  }
+
+  .toast {
+    right: 10px;
+    left: 10px;
+    max-width: 100%;
+  }
+
+  .addMoreBtn {
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    font-size: 20px;
+  }
+}
+
+/* Desktop - Show warning and hide content */
+@media (min-width: 769px) {
+  .desktopWarning {
+    display: flex !important;
+  }
+
+  .ordersContainer {
+    display: none !important;
+  }
+}
+
+/* Print styles (for future use) */
+@media print {
+  .addMoreBtn,
+  .refreshBtn,
+  .toast {
+    display: none;
+  }
+}
