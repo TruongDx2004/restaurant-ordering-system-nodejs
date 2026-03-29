@@ -120,6 +120,22 @@ const WebSocketService = {
     };
     io.emit("order-item-status", message);
     console.log(`[Socket] Sent status update for item ${itemId} in order ${invoiceId}`);
+  },
+
+  /**
+   * Gửi tin nhắn đến nhân viên (từ khách hàng hoặc admin) (/topic/staff-chat)
+   */
+  sendMessageToStaff: (tableId, sender, content) => {
+    const io = getIO();
+    const message = {
+      type: "STAFF_CHAT_MESSAGE",
+      sender,
+      content,
+      tableId,
+      timestamp: new Date()
+    };
+    io.emit("employee-chat", message);
+    console.log(`[Socket] Sent message to staff for table ${tableId}: ${content}`);
   }
 };
 
