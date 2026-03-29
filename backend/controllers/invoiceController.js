@@ -2,6 +2,7 @@ const { Invoice, Table, InvoiceItem, Dish, Category } = require("../schemas");
 const responseHandler = require("../utils/responseHandler");
 const { Op } = require("sequelize");
 const sequelize = require("../config/db");
+const webSocketService = require("../utils/webSocketService"); // Import WebSocketService
 
 // ===== MAPPER =====
 const toResponse = (invoice) => ({
@@ -279,6 +280,14 @@ exports.updateInvoiceStatus = async (req, res, next) => {
             paidAt: status === "PAID" ? new Date() : null
         });
 
+        // ================= WEBSOCKET =================
+        if (status === "PAID") {
+            webSocketService.sendPaymentNotification(invoice.id, invoice.tableId, "PAID");
+            webSocketService.sendTableStatusUpdate(invoice.tableId, "AVAILABLE", null);
+        } else if (status === "CANCELLED") {
+            webSocketService.sendTableStatusUpdate(invoice.tableId, "AVAILABLE", null);
+        }
+
         return responseHandler.success(
             res,
             toResponse(invoice),
@@ -473,6 +482,10 @@ exports.createInvoiceWithItems = async (req, res, next) => {
         await invoice.update({ totalAmount }, { transaction: t });
 
         await t.commit();
+
+        // ================= WEBSOCKET =================
+        webSocketService.sendNewOrderNotification(invoice.id, tableId, "Có đơn hàng mới tại bàn " + tableId);
+        webSocketService.sendTableStatusUpdate(tableId, "OCCUPIED", null);
 
         // reload full data giống Java
         const fullInvoice = await Invoice.findByPk(invoice.id, {
