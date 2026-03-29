@@ -48,7 +48,7 @@ const entityConfigs = {
     ],
     mapRow: (row) => ({
       tableNumber: row.getCell(2).value,
-      area: row.getCell(3).value || 'CHUNG',
+      area: row.getCell(3).value || 'Khu vực 1',
       status: row.getCell(4).value || 'AVAILABLE',
       isActive: row.getCell(5).value === 'TRUE' || row.getCell(5).value === true
     })
