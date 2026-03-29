@@ -1,0 +1,150 @@
+/* DesktopWarning Shared Component Styles */
+
+.desktopWarning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 99999;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.content {
+  background: white;
+  padding: 60px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.icon {
+  font-size: 80px;
+  color: #667eea;
+  margin-bottom: 20px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.content h1 {
+  font-size: 32px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.content p {
+  font-size: 18px;
+  color: #7f8c8d;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.qrCode {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.qrCode p {
+  font-size: 14px;
+  color: #2c3e50;
+  margin: 0 0 15px 0;
+  font-weight: 500;
+}
+
+.qrPlaceholder {
+  width: 200px;
+  height: 200px;
+  background: white;
+  margin: 0 auto;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 2px dashed #ddd;
+}
+
+.qrPlaceholder i {
+  font-size: 60px;
+  color: #ddd;
+}
+
+.qrPlaceholder span {
+  font-size: 14px;
+  color: #999;
+}
+
+/* Mobile - Hide warning on mobile devices */
+@media (max-width: 768px) {
+  .desktopWarning {
+    display: none !important;
+  }
+}
+
+/* Desktop - Show warning on desktop/laptop */
+@media (min-width: 769px) {
+  .desktopWarning {
+    display: flex !important;
+  }
+}
+
+/* Responsive for smaller desktop screens */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content {
+    padding: 40px 30px;
+    max-width: 500px;
+  }
+
+  .icon {
+    font-size: 60px;
+  }
+
+  .content h1 {
+    font-size: 28px;
+  }
+
+  .content p {
+    font-size: 16px;
+  }
+
+  .qrPlaceholder {
+    width: 180px;
+    height: 180px;
+  }
+
+  .qrPlaceholder i {
+    font-size: 50px;
+  }
+}

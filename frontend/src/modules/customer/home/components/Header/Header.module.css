@@ -1,0 +1,199 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Menu Toggle (Hamburger) */
+.menuToggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.menuToggle span {
+  width: 24px;
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.menuToggle:hover span {
+  background: #ff6b6b;
+}
+
+.menuToggle:active span {
+  background: #ff5252;
+}
+
+/* Table Info */
+.tableInfo {
+  flex-shrink: 0;
+}
+
+.tableNumber {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Search Container */
+.searchContainer {
+  flex: 1;
+  min-width: 0; /* Allow flex item to shrink below content size */
+}
+
+.searchForm {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 24px;
+  padding: 0 12px;
+  height: 40px;
+}
+
+.searchBar {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  padding: 8px 8px 8px 0;
+  outline: none;
+  color: #333;
+}
+
+.searchBar::placeholder {
+  color: #999;
+}
+
+.searchBtn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.searchBtn:hover {
+  color: #ff6b6b;
+}
+
+.searchBtn:active {
+  color: #ff5252;
+}
+
+.clearBtn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clearBtn:hover {
+  color: #ff6b6b;
+}
+
+/* Header Actions */
+.headerActions {
+  flex-shrink: 0;
+}
+
+.cartBtn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.cartBtn:hover {
+  color: #ff6b6b;
+  transform: scale(1.1);
+}
+
+.cartBtn:active {
+  transform: scale(0.95);
+}
+
+/* Cart Badge (for item count - can be added later) */
+.cartBtn::after {
+  /* Placeholder for cart item count badge */
+  /* content: attr(data-count); */
+  /* position: absolute; */
+  /* top: 0; */
+  /* right: 0; */
+  /* background: #ff6b6b; */
+  /* color: white; */
+  /* font-size: 10px; */
+  /* font-weight: bold; */
+  /* padding: 2px 5px; */
+  /* border-radius: 10px; */
+  /* min-width: 16px; */
+  /* text-align: center; */
+}
+
+/* Responsive */
+@media (max-width: 380px) {
+  .header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .tableNumber {
+    font-size: 14px;
+  }
+
+  .searchBar {
+    font-size: 13px;
+  }
+
+  .searchForm {
+    height: 36px;
+  }
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding: 16px 24px;
+  }
+
+  .tableNumber {
+    font-size: 18px;
+  }
+
+  .searchBar {
+    font-size: 15px;
+  }
+
+  .searchForm {
+    height: 44px;
+  }
+}

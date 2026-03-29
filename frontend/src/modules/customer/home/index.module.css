@@ -1,0 +1,212 @@
+.customerHome {
+  min-height: 100vh;
+  background: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Search Section */
+.searchSection {
+  margin-bottom: 20px;
+}
+
+.searchHeader {
+  padding: 20px 16px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 16px;
+}
+
+.searchTitle {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.searchCount {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+/* Category Sections */
+.categorySections {
+  padding: 0;
+}
+
+.categorySection {
+  margin-bottom: 40px;
+  scroll-margin-top: 140px; /* Offset for sticky header + category nav */
+}
+
+.categorySectionHeader {
+  padding: 24px 16px 16px;
+  background: white;
+  margin-bottom: 16px;
+}
+
+.categoryTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #E53935;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.categoryTitle::before {
+  content: '';
+  width: 4px;
+  height: 28px;
+  background: linear-gradient(to bottom, #E53935, #FFB300);
+  border-radius: 2px;
+}
+
+.categoryDescription {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 12px 0;
+  font-style: italic;
+}
+
+.categoryDivider {
+  height: 2px;
+  background: linear-gradient(to right, #E53935 0%, #FFB300 50%, transparent 100%);
+  margin-top: 12px;
+  border-radius: 2px;
+}
+
+/* Loading & Empty States */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #E53935;
+}
+
+.loading i {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.loading p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.emptyState i {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyState p {
+  font-size: 16px;
+  color: #999;
+  margin: 0;
+}
+
+/* Desktop Message (Optional) */
+.desktopMessage {
+  display: none;
+  text-align: center;
+  padding: 100px 20px;
+  background: #f5f5f5;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.desktopMessage h1 {
+  font-size: 32px;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.desktopMessage p {
+  font-size: 18px;
+  color: #666;
+  margin: 0;
+}
+
+/* Hide desktop message on mobile */
+@media (max-width: 767px) {
+  .desktopMessage {
+    display: none !important;
+  }
+}
+
+/* Show desktop message on large screens (optional) */
+/* @media (min-width: 1200px) {
+  .customerHome {
+    display: none;
+  }
+
+  .desktopMessage {
+    display: flex;
+  }
+} */
+
+/* Responsive */
+@media (min-width: 768px) {
+  .searchHeader {
+    padding: 24px;
+  }
+
+  .searchTitle {
+    font-size: 24px;
+  }
+
+  .searchCount {
+    font-size: 15px;
+  }
+
+  .categorySectionHeader {
+    padding: 32px 24px 20px;
+  }
+
+  .categoryTitle {
+    font-size: 28px;
+  }
+
+  .categoryTitle::before {
+    height: 32px;
+  }
+
+  .categoryDescription {
+    font-size: 15px;
+  }
+
+  .categorySection {
+    margin-bottom: 50px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mainContent {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}

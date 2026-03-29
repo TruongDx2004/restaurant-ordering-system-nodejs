@@ -1,0 +1,151 @@
+.categoryNav {
+  background: white;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 64px; /* Below header */
+  z-index: 90;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  transition: all 0.3s ease;
+}
+
+.categoryNav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.categoryNav.closed {
+  max-height: 0;
+  border-bottom: none;
+  overflow: hidden;
+}
+
+.categoryList {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+
+.categoryItem {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.categoryItem:hover {
+  background: #e8e8e8;
+  color: #333;
+}
+
+.categoryItem:active {
+  transform: scale(0.95);
+}
+
+.categoryItem.active {
+  background: #ff6b6b;
+  color: white;
+  font-weight: 600;
+}
+
+.categoryItem.active:hover {
+  background: #ff5252;
+}
+
+.categoryName {
+  display: block;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  flex-shrink: 0;
+}
+
+.skeletonItem {
+  width: 80px;
+  height: 32px;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 20px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Scroll indicator (optional) */
+.categoryNav::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to left, white, transparent);
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 380px) {
+  .categoryList {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .categoryItem {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 768px) {
+  .categoryNav {
+    top: 72px; /* Adjust based on header height */
+  }
+
+  .categoryList {
+    padding: 16px 24px;
+    gap: 12px;
+  }
+
+  .categoryItem {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .categoryNav {
+    overflow-x: hidden;
+  }
+
+  .categoryList {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .categoryNav::after {
+    display: none;
+  }
+}
