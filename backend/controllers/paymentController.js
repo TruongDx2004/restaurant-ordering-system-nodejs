@@ -146,7 +146,7 @@ exports.updatePaymentStatus = async (req, res, next) => {
 // ================= PROCESS =================
 exports.processPayment = async (req, res, next) => {
   try {
-    const { invoiceId, method, amount } = req.body;
+    const { invoiceId, method, amount } = req.query;
 
     if (!invoiceId || !method || !amount) {
       return responseHandler.error(res, "Missing required fields", 400);
