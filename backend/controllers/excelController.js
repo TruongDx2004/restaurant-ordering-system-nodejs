@@ -57,17 +57,20 @@ const entityConfigs = {
     model: User,
     columns: [
       { header: 'ID', key: 'id', width: 10 },
-      { header: 'Tên đăng nhập', key: 'email', width: 20 },
+      { header: 'Email', key: 'email', width: 20 },
       { header: 'Họ tên', key: 'name', width: 30 },
+      { header: 'Số điện thoại', key: 'phone', width: 20 },
       { header: 'Vai trò', key: 'role', width: 15 },
-      { header: 'Hoạt động', key: 'isActive', width: 15 }
+      { header: 'Ngày tạo', key: 'createdAt', width: 20 },
     ],
     mapRow: (row) => ({
-      username: row.getCell(2).value,
-      fullName: row.getCell(3).value,
-      role: row.getCell(4).value || 'EMPLOYEE',
-      password: row.getCell(5).value || '123456', // Mật khẩu mặc định nếu trống
-      isActive: row.getCell(6).value === 'TRUE' || row.getCell(6).value === true
+      email: row.getCell(2).value,
+      name: row.getCell(3).value,
+      phone: row.getCell(4).value,
+      role: row.getCell(5).value || 'EMPLOYEE',
+      password: row.getCell(6).value || '123456', // Mật khẩu mặc định nếu trống
+      createdAt: row.getCell(7).value,
+      isActive: row.getCell(8).value === 'TRUE' || row.getCell(8).value === true
     })
   }
 };
