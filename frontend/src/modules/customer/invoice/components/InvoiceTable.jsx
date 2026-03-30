@@ -63,7 +63,7 @@ export const InvoiceTable = ({ items }) => {
                   <div className={styles.dishInfo}>
                     {item.dish?.image && (
                       <img 
-                        src={item.dish.image} 
+                        src={item.dish.image.startsWith('http') ? item.dish.image : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8080'}${item.dish.image.startsWith('/') ? item.dish.image : '/' + item.dish.image}`} 
                         alt={item.dish.name}
                         className={styles.dishImage}
                         onError={(e) => {

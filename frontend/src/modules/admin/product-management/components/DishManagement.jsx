@@ -64,6 +64,14 @@ export const DishManagement = () => {
   const currentDishes = filteredDishes.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredDishes.length / itemsPerPage);
 
+  const SERVER_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8080';
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/placeholder-dish.jpg';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${SERVER_URL}${imagePath}`;
+  };
+
   // Handle create
   const handleCreate = () => {
     setEditingDish(null);
@@ -298,7 +306,7 @@ export const DishManagement = () => {
                 <tr key={dish.id}>
                   <td>
                     <img
-                      src={dish.imageUrl || '/placeholder-dish.jpg'}
+                      src={getImageUrl(dish.image)}
                       alt={dish.name}
                       className={styles.dishImage}
                     />

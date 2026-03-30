@@ -17,20 +17,28 @@ const toResponse = (dish) => ({
     : null
 });
 
-const toEntity = (data) => ({
-  name: data.name,
-  price: data.price,
-  status: data.status,
-  image: data.image,
-  categoryId: data.categoryId
-});
+const toEntity = (data, file, oldDish = null) => {
+  let imageValue = oldDish?.image || null;
+
+  if (file) {
+    imageValue = `/uploads/${file.filename}`;
+    console.log('Updating dish image:', imageValue);
+  }
+  return {
+    name: data.name,
+    price: parseInt(data.price),
+    status: data.status,
+    image: imageValue,
+    categoryId: parseInt(data.categoryId)
+  };
+};
 
 // ===== CONTROLLER =====
 
 // CREATE
 exports.createDish = async (req, res, next) => {
   try {
-    const entity = toEntity(req.body);
+    const entity = toEntity(req.body, req.file);
 
     const created = await Dish.create(entity);
 
@@ -105,7 +113,7 @@ exports.updateDish = async (req, res, next) => {
 
     if (!dish) throw new Error("Dish not found");
 
-    const entity = toEntity(req.body);
+    const entity = toEntity(req.body, req.file, dish);
 
     await dish.update(entity);
 
