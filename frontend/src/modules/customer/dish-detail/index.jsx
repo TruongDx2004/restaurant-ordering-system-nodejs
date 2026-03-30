@@ -127,7 +127,9 @@ export const DishDetail = () => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '/placeholder-dish.jpg';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}${imagePath}`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8080';
+    const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    return `${baseUrl}${path}`;
   };
 
   if (loading) {

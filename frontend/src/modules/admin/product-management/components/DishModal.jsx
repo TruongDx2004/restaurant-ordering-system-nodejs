@@ -11,11 +11,14 @@ export const DishModal = ({ dish, categories, onSave, onClose }) => {
     description: '',
     price: '',
     categoryId: '',
-    imageUrl: '',
     status: 'AVAILABLE'
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const SERVER_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8080';
 
   // Load dish data if editing
   useEffect(() => {
@@ -25,9 +28,16 @@ export const DishModal = ({ dish, categories, onSave, onClose }) => {
         description: dish.description || '',
         price: dish.price || '',
         categoryId: dish.category?.id || '',
-        imageUrl: dish.imageUrl || '',
         status: dish.status || 'AVAILABLE'
       });
+      // Handle existing image path
+      if (dish.image) {
+        if (dish.image.startsWith('http')) {
+          setPreviewUrl(dish.image);
+        } else {
+          setPreviewUrl(`${SERVER_URL}${dish.image}`);
+        }
+      }
     }
   }, [dish]);
 
@@ -37,6 +47,31 @@ export const DishModal = ({ dish, categories, onSave, onClose }) => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validation: image only and < 5MB
+      if (!file.type.startsWith('image/')) {
+        setError('Chỉ cho phép file hình ảnh!');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Dung lượng file không được vượt quá 5MB!');
+        return;
+      }
+
+      setImageFile(file);
+      setError('');
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -59,11 +94,20 @@ export const DishModal = ({ dish, categories, onSave, onClose }) => {
 
     try {
       setLoading(true);
-      await onSave({
-        ...formData,
-        price: parseFloat(formData.price),
-        categoryId: parseInt(formData.categoryId)
-      });
+      
+      // Use FormData for file upload
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('description', formData.description || '');
+      data.append('price', formData.price);
+      data.append('categoryId', formData.categoryId);
+      data.append('status', formData.status);
+      
+      if (imageFile) {
+        data.append('image', imageFile);
+      }
+      
+      await onSave(data);
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra');
     } finally {
@@ -157,15 +201,15 @@ export const DishModal = ({ dish, categories, onSave, onClose }) => {
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label htmlFor="imageUrl">URL hình ảnh</label>
+              <label htmlFor="image">Hình ảnh món ăn</label>
               <input
-                type="url"
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
+                type="file"
+                id="image"
+                name="image"
+                onChange={handleFileChange}
+                accept="image/*"
               />
+              <small>Định dạng: JPG, PNG, WEBP. Tối đa 5MB.</small>
             </div>
 
             <div className={styles.formGroup}>
@@ -182,9 +226,9 @@ export const DishModal = ({ dish, categories, onSave, onClose }) => {
             </div>
           </div>
 
-          {formData.imageUrl && (
+          {previewUrl && (
             <div className={styles.imagePreview}>
-              <img src={formData.imageUrl} alt="Preview" onError={(e) => {
+              <img src={previewUrl} alt="Preview" onError={(e) => {
                 e.target.style.display = 'none';
               }} />
             </div>

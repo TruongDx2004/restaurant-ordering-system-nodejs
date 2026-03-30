@@ -121,15 +121,17 @@ export const dishApi = {
    * @returns {Promise} Response với dish đã cập nhật
    */
   update: async (id, dishData) => {
-    try {
-      const response = await axiosInstance.put(
-        DISH_ENDPOINTS.UPDATE(id),
-        dishData
-      );
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const isFormData = dishData instanceof FormData;
+
+    const response = await axiosInstance.put(
+      DISH_ENDPOINTS.UPDATE(id),
+      dishData,
+      isFormData
+        ? { headers: { "Content-Type": "multipart/form-data" } }
+        : {}
+    );
+
+    return response;
   },
 
   /**
