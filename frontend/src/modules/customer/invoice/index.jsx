@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../orders/hooks';
 import { useInvoicePayment } from './hooks';
-import { InvoiceTable, PaymentSection } from './components';
+import { InvoiceTable, PaymentSection, PaymentWaitingModal } from './components';
 import { DesktopWarning } from '../../../components/shared';
 import storage from '../../../utils/storage';
 import { webSocketService } from '../../../services/webSocketService';
@@ -16,6 +16,7 @@ const Invoice = () => {
   const navigate = useNavigate();
   const [tableNumber, setTableNumber] = useState(null);
   const [toast, setToast] = useState(null);
+  const [isWaitingModalOpen, setIsWaitingModalOpen] = useState(false);
 
   // Get table number from storage
   useEffect(() => {
@@ -40,8 +41,11 @@ const Invoice = () => {
     // 1. Lắng nghe trạng thái thanh toán/hóa đơn
     const unsubscribePayment = webSocketService.subscribe('/topic/payments', (message) => {
       console.log('[Invoice] Payment update received:', message);
-      if (message.orderId === invoice.id) {
+      if (message.orderId === invoice.id || message.orderId == invoice.id) {
         showToast(`Trạng thái hóa đơn: ${message.data}`, 'info');
+        if (message.data === 'SUCCESS' || message.data === 'PAID') {
+          setIsWaitingModalOpen(false); // Đóng modal nếu đã thanh toán thành công
+        }
         refetch(); // Cập nhật lại UI để đổi màu trạng thái
       }
     });
@@ -114,7 +118,13 @@ const Invoice = () => {
   }, [items]);
 
   // Payment processing
-  const { processPayment, processMoMoPayment, isProcessing, error: paymentError } = useInvoicePayment();
+  const { 
+    processPayment, 
+    processMoMoPayment, 
+    requestCashPayment,
+    isProcessing, 
+    error: paymentError 
+  } = useInvoicePayment();
 
   /**
    * Show toast notification
@@ -137,6 +147,16 @@ const Invoice = () => {
       const result = await processMoMoPayment(invoice.id, amount);
       if (!result.success) {
         showToast(result.error || 'Thanh toán MoMo thất bại!', 'error');
+      }
+      return;
+    }
+
+    if (paymentMethod === 'CASH') {
+      const result = await requestCashPayment(invoice.id, invoice.tableId || tableNumber, amount);
+      if (result.success) {
+        setIsWaitingModalOpen(true);
+      } else {
+        showToast(result.error || 'Không thể gửi yêu cầu thanh toán!', 'error');
       }
       return;
     }
@@ -284,6 +304,14 @@ const Invoice = () => {
           isProcessing={isProcessing}
         />
       )}
+
+      {/* Payment Waiting Modal */}
+      <PaymentWaitingModal
+        isOpen={isWaitingModalOpen}
+        onClose={() => setIsWaitingModalOpen(false)}
+        onRetry={() => handlePayment('CASH', invoice?.totalAmount)}
+        tableNumber={invoice?.table?.tableNumber || tableNumber}
+      />
 
       {/* Already Paid Message */}
       {invoice.status === 'PAID' && (

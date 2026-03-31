@@ -1,7 +1,8 @@
 const { Dish, InvoiceItem, Category, Invoice } = require("../schemas")
 const responseHandler = require("../utils/responseHandler");
 const sequelize = require("../config/db");
-const webSocketService = require("../utils/webSocketService"); // Import WebSocketService
+const webSocketService = require("../utils/webSocketService"); 
+const notificationController = require("./notificationController");
 
 // ===== mapper =====
 const toResponse = (item) => ({
@@ -247,10 +248,10 @@ exports.addItemToInvoice = async (req, res, next) => {
     }
 
     const dish = await Dish.findByPk(dishId);
+    const invoice = await Invoice.findByPk(invoiceId);
 
-    if (!dish) {
-      return responseHandler.error(res, "Dish not found", 404);
-    }
+    if (!dish) return responseHandler.error(res, "Dish not found", 404);
+    if (!invoice) return responseHandler.error(res, "Invoice not found", 404);
 
     const unitPrice = dish.price;
     const totalPrice = unitPrice * quantity;
@@ -261,6 +262,15 @@ exports.addItemToInvoice = async (req, res, next) => {
       quantity,
       unitPrice,
       totalPrice
+    });
+
+    // Thông báo cho nhân viên
+    await notificationController.createAndSend({
+      title: "Món mới được gọi",
+      message: `Bàn ${invoice.tableId} vừa gọi thêm ${quantity}x ${dish.name}`,
+      type: "NEW_ORDER",
+      recipientType: "ALL",
+      data: { invoiceId, tableId: invoice.tableId, dishName: dish.name }
     });
 
     return responseHandler.success(res, toResponse(item), "Added successfully");

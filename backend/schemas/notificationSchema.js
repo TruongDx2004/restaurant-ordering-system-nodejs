@@ -10,38 +10,46 @@ const Notification = sequelize.define(
       autoIncrement: true
     },
 
-    recipientType: {
-      type: DataTypes.ENUM("USER", "CUSTOMER"),
-      allowNull: false,
-      field: "recipient_type"
-    },
-
-    recipientId: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      field: "recipient_id"
-    },
-
     title: {
       type: DataTypes.STRING,
       allowNull: false
     },
 
     message: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.TEXT,
       allowNull: false
     },
 
-    read: {
+    type: {
+      type: DataTypes.STRING, // Ví dụ: CASH_PAYMENT_REQUEST, NEW_ORDER, etc.
+      allowNull: false
+    },
+
+    recipientType: {
+      type: DataTypes.ENUM("USER", "ROLE", "ALL"),
+      field: "recipient_type",
+      defaultValue: "ALL"
+    },
+
+    recipientId: {
+      type: DataTypes.BIGINT,
+      field: "recipient_id",
+      allowNull: true
+    },
+
+    isRead: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-      field: "is_read"
+      field: "is_read",
+      defaultValue: false
+    },
+
+    data: {
+      type: DataTypes.JSON, // Lưu metadata như invoiceId, tableId
+      allowNull: true
     },
 
     createdAt: {
       type: DataTypes.DATE,
-      allowNull: false,
       field: "created_at",
       defaultValue: DataTypes.NOW
     }

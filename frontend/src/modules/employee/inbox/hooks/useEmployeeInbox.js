@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { messageApi, tableApi, invoiceApi } from '../../../../api';
+import { messageApi, tableApi, invoiceApi, paymentApi } from '../../../../api';
 import { webSocketService } from '../../../../services/webSocketService';
 
 /**
@@ -78,11 +78,11 @@ export const useEmployeeInbox = () => {
     const unsubscribe = webSocketService.subscribe('/topic/employee/chat', (message) => {
 
       const currentTable = activeTableRef.current;
-      if (message.tableId === currentTable?.id) {
+      if (message.tableId === currentTable?.id || message.tableId == currentTable?.id) {
         fetchMessages(currentTable.id);
       } else {
         setConversations(prev => prev.map(conv => {
-          if (conv.id === message.tableId) {
+          if (conv.id === message.tableId || conv.id == message.tableId) {
             return {
               ...conv,
               lastMessage: message.content,
@@ -96,7 +96,7 @@ export const useEmployeeInbox = () => {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [fetchMessages]);
 
 
   // Initial fetch only - removed intervals as requested
@@ -141,6 +141,14 @@ export const useEmployeeInbox = () => {
       )
     );
   };
+
+  /**
+   * Refresh current chat
+   */
+  const refreshChat = useCallback(() => {
+    if (activeTable) fetchMessages(activeTable.id);
+  }, [activeTable, fetchMessages]);
+
   /**
    * Send message to a table
    */
@@ -178,6 +186,29 @@ export const useEmployeeInbox = () => {
     }
   };
 
+  /**
+   * Confirm cash payment for an invoice
+   */
+  const confirmPayment = async (invoiceId) => {
+    try {
+      const response = await paymentApi.confirmByInvoice(invoiceId);
+      if (response.success) {
+        // Gửi tin nhắn tự động thông báo đã nhận tiền
+        await sendMessage('Nhân viên đã xác nhận thanh toán tiền mặt. Cảm ơn quý khách!', 'SYSTEM');
+        
+        // Refresh messages and table status
+        refreshChat();
+        fetchConversations();
+        
+        return { success: true };
+      }
+      return { success: false, error: response.message };
+    } catch (err) {
+      console.error('Error confirming payment:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
   return {
     conversations,
     activeTable,
@@ -187,8 +218,9 @@ export const useEmployeeInbox = () => {
     error,
     sending,
     sendMessage,
+    confirmPayment,
     markAsRead,
     refreshList: fetchConversations,
-    refreshChat: () => fetchMessages(activeTable?.id)
+    refreshChat
   };
 };

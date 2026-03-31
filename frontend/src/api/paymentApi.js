@@ -73,6 +73,37 @@ const paymentApi = {
   },
 
   /**
+   * Request cash payment (notifies staff)
+   * @param {Object} data - { invoiceId, tableId, amount }
+   */
+  requestCashPayment: async (data) => {
+    try {
+      const response = await axiosInstance.post('/payments/request-cash', data);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Confirm payment using invoice ID
+   * @param {number} invoiceId - Invoice ID
+   * @param {string} transactionCode - Transaction code (optional)
+   * @returns {Promise} Response with payment data
+   */
+  confirmByInvoice: async (invoiceId, transactionCode) => {
+    try {
+      const response = await axiosInstance.patch('/payments/confirm-by-invoice', {
+        invoiceId,
+        transactionCode
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Cancel payment
    * @param {number} paymentId - Payment ID
    * @returns {Promise} Response với payment data

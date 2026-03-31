@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import paymentApi from '../../../api/paymentApi';
 import styles from './NotificationItem.module.css';
 
 const NotificationItem = ({ notification, onMarkRead, onDelete }) => {
-    const { id, title, message, read, createdAt } = notification;
+    const { id, title, message, isRead, createdAt, type, data } = notification;
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -18,20 +20,50 @@ const NotificationItem = ({ notification, onMarkRead, onDelete }) => {
     };
 
     const getTypeConfig = () => {
-        const msg = message.toLowerCase();
-        if (msg.includes('tiền mặt')) return { icon: 'fa-hand-holding-usd', class: styles.cash, label: 'Tiền mặt' };
-        if (msg.includes('ví') || msg.includes('thanh toán')) return { icon: 'fa-check-circle', class: styles.eWallet, label: 'E-Wallet' };
-        if (msg.includes('đơn hàng')) return { icon: 'fa-utensils', class: styles.order, label: 'Đơn hàng' };
-        return { icon: 'fa-info-circle', class: styles.system, label: 'Hệ thống' };
+        switch (type) {
+            case 'CASH_PAYMENT_REQUEST':
+                return { icon: 'fa-hand-holding-usd', class: styles.paymentRequest, label: 'Thanh toán' };
+            case 'PAYMENT_SUCCESS':
+                return { icon: 'fa-check-circle', class: styles.paymentSuccess, label: 'Thành công' };
+            case 'NEW_ORDER':
+                return { icon: 'fa-utensils', class: styles.newOrder, label: 'Đơn hàng' };
+            default:
+                return { icon: 'fa-info-circle', class: styles.system, label: 'Hệ thống' };
+        }
     };
 
     const config = getTypeConfig();
-    const isUrgent = message.toLowerCase().includes('tiền mặt');
+    const isUrgent = type === 'CASH_PAYMENT_REQUEST' || type === 'NEW_ORDER';
+
+    const handleConfirmPayment = async (e) => {
+        e.stopPropagation();
+        if (!data?.invoiceId || isProcessing) return;
+
+        if (!window.confirm(`Xác nhận đã thu tiền cho hóa đơn #${data.invoiceId}?`)) {
+            return;
+        }
+
+        try {
+            setIsProcessing(true);
+            const response = await paymentApi.confirmByInvoice(data.invoiceId);
+            if (response.success) {
+                alert('Xác nhận thanh toán thành công! Bàn đã được giải phóng.');
+                onMarkRead(id);
+            } else {
+                alert('Lỗi: ' + (response.message || 'Không thể xác nhận thanh toán'));
+            }
+        } catch (err) {
+            console.error('Confirm payment error:', err);
+            alert('Lỗi: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     return (
         <div 
-            className={`${styles.card} ${!read ? styles.unread : ''} ${isUrgent ? styles.urgent : ''}`}
-            onClick={() => !read && onMarkRead(id)}
+            className={`${styles.card} ${!isRead ? styles.unread : ''} ${isUrgent && !isRead ? styles.urgent : ''}`}
+            onClick={() => !isRead && onMarkRead(id)}
         >
             <div className={`${styles.statusIndicator} ${config.class}`}></div>
             
@@ -48,10 +80,26 @@ const NotificationItem = ({ notification, onMarkRead, onDelete }) => {
                     <span className={styles.time}>{formatDate(createdAt)}</span>
                 </div>
                 <p className={styles.message}>{message}</p>
+
+                {type === 'CASH_PAYMENT_REQUEST' && !isRead && (
+                    <div className={styles.actionBox}>
+                        <button 
+                            className={styles.confirmPaymentBtn}
+                            onClick={handleConfirmPayment}
+                            disabled={isProcessing}
+                        >
+                            {isProcessing ? (
+                                <><i className="fas fa-spinner fa-spin"></i> Đang xử lý...</>
+                            ) : (
+                                <><i className="fas fa-money-bill-wave"></i> Xác nhận đã thu tiền</>
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className={styles.actions}>
-                {!read && (
+                {!isRead && (
                     <button 
                         className={styles.actionBtn} 
                         onClick={(e) => { e.stopPropagation(); onMarkRead(id); }}
@@ -77,8 +125,11 @@ NotificationItem.propTypes = {
         id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         title: PropTypes.string.isRequired,
         message: PropTypes.string.isRequired,
-        read: PropTypes.bool.isRequired,
+        isRead: PropTypes.bool,
+        read: PropTypes.bool, // For backward compatibility if needed
         createdAt: PropTypes.string.isRequired,
+        type: PropTypes.string,
+        data: PropTypes.object,
     }).isRequired,
     onMarkRead: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,

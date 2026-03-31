@@ -2,9 +2,11 @@ const Payment = require("../schemas/paymentSchema");
 const Invoice = require("../schemas/invoiceSchema");
 const Table = require("../schemas/tableSchema");
 const responseHandler = require("../utils/responseHandler");
+const notificationController = require("./notificationController");
 const momoConfig = require("../config/momo");
 const crypto = require("crypto");
 const axios = require("axios");
+const webSocketService = require("../utils/webSocketService");
 
 // ================= MOMO =================
 exports.createMoMoPayment = async (req, res, next) => {
@@ -126,6 +128,15 @@ exports.handleMoMoIPN = async (req, res, next) => {
             { status: "AVAILABLE" },
             { where: { id: invoice.tableId } }
           );
+
+          // 3. Thông báo cho nhân viên
+          await notificationController.createAndSend({
+            title: "Thanh toán thành công",
+            message: `Hóa đơn #${invoice.id} (Bàn ${invoice.tableId}) đã được thanh toán qua MoMo.`,
+            type: "PAYMENT_SUCCESS",
+            recipientType: "ALL",
+            data: { invoiceId: invoice.id, tableId: invoice.tableId, method: "MOMO" }
+          });
 
           console.log(`✅ Invoice #${invoice.id} PAID & Table #${invoice.tableId} AVAILABLE via MoMo IPN`);
         }
@@ -306,6 +317,34 @@ exports.processPayment = async (req, res, next) => {
   }
 };
 
+exports.requestCashPayment = async (req, res, next) => {
+  try {
+    const { invoiceId, tableId, amount } = req.body;
+
+    if (!invoiceId || !tableId) {
+      return responseHandler.error(res, "Missing required fields", 400);
+    }
+
+    // Lưu và phát thông báo qua Notification controller
+    await notificationController.createAndSend({
+      title: "Yêu cầu thanh toán tiền mặt",
+      message: `Bàn ${tableId} yêu cầu thanh toán ${parseInt(amount).toLocaleString('vi-VN')} VND.`,
+      type: "CASH_PAYMENT_REQUEST",
+      recipientType: "ALL",
+      data: {
+        invoiceId,
+        tableId,
+        amount,
+        action: "CONFIRM_PAYMENT"
+      }
+    });
+
+    return responseHandler.success(res, null, "Cash payment request sent to all staff");
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ================= CONFIRM (Admin/Staff Action) =================
 exports.confirmPayment = async (req, res, next) => {
   try {
@@ -337,9 +376,83 @@ exports.confirmPayment = async (req, res, next) => {
         { status: "AVAILABLE" },
         { where: { id: invoice.tableId } }
       );
+
+      // 3. Thông báo thành công
+      await notificationController.createAndSend({
+        title: "Xác nhận thanh toán",
+        message: `Hóa đơn #${invoice.id} (Bàn ${invoice.tableId}) đã được xác nhận thanh toán thành công.`,
+        type: "PAYMENT_SUCCESS",
+        recipientType: "ALL",
+        data: { invoiceId: invoice.id, tableId: invoice.tableId }
+      });
     }
 
     return responseHandler.success(res, payment, "Payment confirmed & Table released");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.confirmPaymentByInvoice = async (req, res, next) => {
+  try {
+    const { invoiceId, transactionCode } = req.body;
+    const now = new Date();
+
+    if (!invoiceId) return responseHandler.error(res, "Missing invoiceId", 400);
+
+    const payment = await Payment.findOne({ where: { invoiceId } });
+
+    if (!payment) {
+      // Nếu chưa có payment thì tạo mới luôn
+      const invoice = await Invoice.findByPk(invoiceId);
+      if (!invoice) return responseHandler.error(res, "Invoice not found", 404);
+
+      const newPayment = await Payment.create({
+        invoiceId,
+        amount: invoice.totalAmount,
+        method: "CASH",
+        status: "SUCCESS",
+        transactionCode: transactionCode || "CASH-" + Date.now(),
+        paidAt: now
+      });
+
+      await invoice.update({ status: "PAID", paidAt: now });
+      await Table.update({ status: "AVAILABLE" }, { where: { id: invoice.tableId } });
+
+      // Thông báo
+      await notificationController.createAndSend({
+        title: "Xác nhận thanh toán",
+        message: `Hóa đơn #${invoice.id} (Bàn ${invoice.tableId}) đã được xác nhận thanh toán thành công.`,
+        type: "PAYMENT_SUCCESS",
+        recipientType: "ALL",
+        data: { invoiceId: invoice.id, tableId: invoice.tableId }
+      });
+
+      return responseHandler.success(res, newPayment, "Payment created and confirmed");
+    }
+
+    await payment.update({
+      status: "SUCCESS",
+      transactionCode: transactionCode || "CASH-" + Date.now(),
+      paidAt: now
+    });
+
+    const invoice = await Invoice.findByPk(invoiceId);
+    if (invoice) {
+      await invoice.update({ status: "PAID", paidAt: now });
+      await Table.update({ status: "AVAILABLE" }, { where: { id: invoice.tableId } });
+
+      // Thông báo
+      await notificationController.createAndSend({
+        title: "Xác nhận thanh toán",
+        message: `Hóa đơn #${invoice.id} (Bàn ${invoice.tableId}) đã được xác nhận thanh toán thành công.`,
+        type: "PAYMENT_SUCCESS",
+        recipientType: "ALL",
+        data: { invoiceId: invoice.id, tableId: invoice.tableId }
+      });
+    }
+
+    return responseHandler.success(res, payment, "Payment confirmed by invoice ID");
   } catch (err) {
     next(err);
   }

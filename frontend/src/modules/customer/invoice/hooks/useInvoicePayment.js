@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { paymentApi, invoiceApi } from '../../../../api';
+import { paymentApi, invoiceApi, messageApi } from '../../../../api';
 
 /**
  * Custom hook để xử lý thanh toán hóa đơn
@@ -91,6 +91,33 @@ export const useInvoicePayment = () => {
   }, []);
 
   /**
+   * Request cash payment (send notification to staff)
+   * @param {number} invoiceId
+   * @param {number} tableId
+   * @param {number} amount
+   */
+  const requestCashPayment = useCallback(async (invoiceId, tableId, amount) => {
+    try {
+      setIsProcessing(true);
+      setError(null);
+
+      const response = await paymentApi.requestCashPayment({
+        invoiceId,
+        tableId,
+        amount
+      });
+
+      return { success: true, data: response.data };
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Không thể gửi yêu cầu';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsProcessing(false);
+    }
+  }, []);
+
+  /**
    * Reset payment state
    */
   const resetPayment = useCallback(() => {
@@ -102,6 +129,7 @@ export const useInvoicePayment = () => {
   return {
     processPayment,
     processMoMoPayment,
+    requestCashPayment,
     isProcessing,
     error,
     paymentResult,

@@ -292,13 +292,78 @@
 }
 
 .systemBubble {
-  background-color: #f0f2f5;
-  color: #65676b;
-  font-size: 11px;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-weight: 500;
+  background-color: #f1f2f6;
+  color: #57606f;
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 6px 16px;
+  border-radius: 15px;
   text-align: center;
+}
+
+/* Request Bill Card */
+.requestBillCard {
+  background-color: #fff;
+  border: 2px solid #ff4757;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  max-width: 85%;
+  margin: 10px auto;
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.15);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+}
+
+.requestIcon {
+  font-size: 2rem;
+  color: #ff4757;
+  display: flex;
+  align-items: center;
+}
+
+.requestContent {
+  flex: 1;
+}
+
+.requestContent h3 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  color: #2f3542;
+  font-weight: 700;
+}
+
+.requestContent p {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  color: #57606f;
+}
+
+.confirmBtn {
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.confirmBtn:hover {
+  background-color: #ff6b81;
+  transform: translateY(-1px);
+}
+
+.confirmBtn:active {
+  transform: translateY(0);
 }
 
 .msgTime {

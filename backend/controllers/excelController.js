@@ -2,6 +2,7 @@ const ExcelJS = require('exceljs');
 const { User, Table, Category, Dish } = require('../schemas');
 const sequelize = require('../config/db');
 const responseHandler = require('../utils/responseHandler');
+const bcrypt = require('bcrypt');
 
 /**
  * Excel Controller
@@ -20,11 +21,11 @@ const entityConfigs = {
       { header: 'Link ảnh', key: 'image', width: 40 }
     ],
     mapRow: (row) => ({
-      name: row.getCell(2).value,
-      price: Number(row.getCell(3).value),
-      status: row.getCell(4).value || 'AVAILABLE',
-      categoryName: row.getCell(5).value,
-      image: row.getCell(6).value || ''
+      name: getCellValue(row.getCell(2)),
+      price: Number(getCellValue(row.getCell(3))),
+      status: getCellValue(row.getCell(4)) || 'AVAILABLE',
+      categoryName: getCellValue(row.getCell(5)),
+      image: getCellValue(row.getCell(6)) || ''
     })
   },
   category: {
@@ -34,7 +35,7 @@ const entityConfigs = {
       { header: 'Tên danh mục', key: 'name', width: 30 }
     ],
     mapRow: (row) => ({
-      name: row.getCell(2).value
+      name: getCellValue(row.getCell(2))
     })
   },
   table: {
@@ -47,10 +48,10 @@ const entityConfigs = {
       { header: 'Đang hoạt động', key: 'isActive', width: 15 }
     ],
     mapRow: (row) => ({
-      tableNumber: row.getCell(2).value,
-      area: row.getCell(3).value || 'Khu vực 1',
-      status: row.getCell(4).value || 'AVAILABLE',
-      isActive: row.getCell(5).value === 'TRUE' || row.getCell(5).value === true
+      tableNumber: getCellValue(row.getCell(2)),
+      area: getCellValue(row.getCell(3)) || 'Khu vực 1',
+      status: getCellValue(row.getCell(4)) || 'AVAILABLE',
+      isActive: getCellValue(row.getCell(5)) === 'TRUE' || getCellValue(row.getCell(5)) === true
     })
   },
   user: {
@@ -63,16 +64,26 @@ const entityConfigs = {
       { header: 'Vai trò', key: 'role', width: 15 },
       { header: 'Ngày tạo', key: 'createdAt', width: 20 },
     ],
-    mapRow: (row) => ({
-      email: row.getCell(2).value,
-      name: row.getCell(3).value,
-      phone: row.getCell(4).value,
-      role: row.getCell(5).value || 'EMPLOYEE',
-      password: row.getCell(6).value || '123456', // Mật khẩu mặc định nếu trống
-      createdAt: row.getCell(7).value,
-      isActive: row.getCell(8).value === 'TRUE' || row.getCell(8).value === true
+    mapRow: async (row) => ({
+      email: getCellValue(row.getCell(2)),
+      name: getCellValue(row.getCell(3)),
+      phone: getCellValue(row.getCell(4)),
+      role: getCellValue(row.getCell(5)) || 'EMPLOYEE',
+      password: await bcrypt.hash('123456', 10),
+      createdAt: new Date(getCellValue(row.getCell(6))) || Date.now(),
+      isActive: getCellValue(row.getCell(7)) === 'TRUE' || getCellValue(row.getCell(8)) === true
     })
   }
+};
+
+const getCellValue = (cell) => {
+  if (!cell) return null;
+
+  if (typeof cell === 'object') {
+    return cell.text || cell.richText?.map(t => t.text).join('') || null;
+  }
+
+  return cell;
 };
 
 // ================= EXPORT =================
@@ -158,7 +169,7 @@ exports.importData = async (req, res, next) => {
       return responseHandler.error(res, 'Vui lòng tải lên file excel', 400);
     }
 
-    
+
 
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(req.file.buffer);
@@ -166,13 +177,12 @@ exports.importData = async (req, res, next) => {
 
     const rows = [];
     let processedRows;
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) { // Bỏ qua header
-        rows.push(config.mapRow(row));
-      }
-    });
+    for (let i = 2; i <= worksheet.rowCount; i++) {
+      const row = worksheet.getRow(i);
+      rows.push(await config.mapRow(row));
+    }
 
-    if(config.model === Dish) {
+    if (config.model === Dish) {
 
       const categories = await Category.findAll({ transaction: t });
 
@@ -189,10 +199,11 @@ exports.importData = async (req, res, next) => {
           let categoryId = categoryMap[categoryName];
 
           if (!categoryId) {
-            const newCategory = await Category.create(
-              { name: row.categoryName },
-              { transaction: t }
-            );
+            const [newCategory, created] = await Category.findOrCreate({
+              where: { name: row.categoryName },
+              defaults: {},
+              transaction: t
+            });
 
             categoryId = newCategory.id;
             categoryMap[categoryName] = categoryId;
@@ -207,7 +218,7 @@ exports.importData = async (req, res, next) => {
           };
         })
       );
-    
+
     } else {
       processedRows = rows;
     }
@@ -221,7 +232,8 @@ exports.importData = async (req, res, next) => {
 
       await config.model.bulkCreate(chunk, {
         transaction: t,
-        validate: true
+        validate: true,
+        ignoreDuplicates: true
       });
 
       importedCount += chunk.length;

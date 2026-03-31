@@ -28,14 +28,10 @@ router.get("/method/:method", verifyToken, controller.getPaymentsByMethod);
  * ACTIONS
  */
 router.patch("/:id/status", verifyToken, controller.updatePaymentStatus);
-
-router.post(
-  "/process",
-  verifyToken,
-  controller.processPayment
-);
-
+router.post("/process", verifyToken, controller.processPayment);
+router.post("/request-cash", verifyToken, controller.requestCashPayment);
 router.patch("/:id/confirm", verifyToken, controller.confirmPayment);
+router.patch("/confirm-by-invoice", verifyToken, controller.confirmPaymentByInvoice);
 router.patch("/:id/cancel", verifyToken, controller.cancelPayment);
 
 /**
