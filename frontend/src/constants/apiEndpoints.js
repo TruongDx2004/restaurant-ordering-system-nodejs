@@ -115,8 +115,21 @@ export const NOTIFICATION_ENDPOINTS = {
   GET_ALL: `${API_BASE.NOTIFICATIONS}`,
   GET_BY_ID: (id) => `${API_BASE.NOTIFICATIONS}/${id}`,
   CREATE: `${API_BASE.NOTIFICATIONS}`,
-  MARK_AS_READ: (id) => `${API_BASE.NOTIFICATIONS}/${id}/read`,
-  GET_UNREAD: `${API_BASE.NOTIFICATIONS}/unread`,
+  UPDATE: (id) => `${API_BASE.NOTIFICATIONS}/${id}`,
+  DELETE: (id) => `${API_BASE.NOTIFICATIONS}/${id}`,
+  
+  // Filter endpoints
+  GET_BY_RECIPIENT: `${API_BASE.NOTIFICATIONS}/recipient/list`,
+  GET_UNREAD_BY_RECIPIENT: `${API_BASE.NOTIFICATIONS}/recipient/unread`,
+  GET_ORDERED_BY_RECIPIENT: `${API_BASE.NOTIFICATIONS}/recipient/ordered`,
+  GET_UNREAD_COUNT: `${API_BASE.NOTIFICATIONS}/recipient/unread-count`,
+  
+  // Action endpoints
+  MARK_AS_READ: (id) => `${API_BASE.NOTIFICATIONS}/${id}/mark-read`,
+  MARK_ALL_AS_READ: `${API_BASE.NOTIFICATIONS}/recipient/mark-all-read`,
+  
+  // Send endpoint
+  SEND: `${API_BASE.NOTIFICATIONS}/send`,
 };
 
 // WebSocket endpoints

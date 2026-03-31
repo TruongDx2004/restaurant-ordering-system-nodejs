@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/admin/AdminAuthContext';
+import { useNotifications } from '../components/shared/Notification';
 import styles from './EmployeeLayout.module.css';
 
 /**
@@ -12,6 +13,7 @@ const EmployeeLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAdminAuth();
+  const { unreadCount } = useNotifications('USER', user?.id);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -39,6 +41,13 @@ const EmployeeLayout = () => {
       label: 'Đơn hàng',
       shortLabel: 'Đơn',
       description: 'Cập nhật món ăn'
+    },
+    {
+      path: '/employee/notifications',
+      icon: 'fa-bell',
+      label: 'Thông báo',
+      shortLabel: 'T.Báo',
+      badge: unreadCount
     },
     {
       path: '/employee/kitchen',
@@ -128,7 +137,14 @@ const EmployeeLayout = () => {
                   className={`${styles.navItem} ${isActive ? styles.active : ''}`}
                   title={sidebarCollapsed ? item.label : ''}
                 >
-                  <i className={`fas ${item.icon}`}></i>
+                  <div className={styles.iconWrapper}>
+                    <i className={`fas ${item.icon}`}></i>
+                    {item.badge > 0 && (
+                      <span className={styles.sidebarBadge}>
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
+                  </div>
                   {!sidebarCollapsed && (
                     <div className={styles.navItemContent}>
                       <span className={styles.navLabel}>{item.label}</span>
@@ -171,11 +187,17 @@ const EmployeeLayout = () => {
                 to={item.path}
                 className={`${styles.bottomNavItem} ${isActive ? styles.active : ''}`}
               >
-                <i className={`fas ${item.icon}`}></i>
+                <div className={styles.iconWrapper}>
+                  <i className={`fas ${item.icon}`}></i>
+                  {item.badge > 0 && (
+                    <span className={styles.sidebarBadge}>
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                </div>
                 <span>{item.shortLabel}</span>
               </Link>
-            );
-          })}
+            );          })}
         </nav>
       )}
     </div>

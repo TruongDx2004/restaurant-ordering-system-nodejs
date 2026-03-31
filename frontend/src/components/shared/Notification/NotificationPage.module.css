@@ -1,0 +1,19 @@
+.pageWrapper {
+    height: 100%;
+    padding: 24px;
+    background-color: #f5f7fa;
+}
+
+.error {
+    padding: 40px;
+    text-align: center;
+    color: #ff4d4f;
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .pageWrapper {
+        padding: 0;
+        background-color: white;
+    }
+}

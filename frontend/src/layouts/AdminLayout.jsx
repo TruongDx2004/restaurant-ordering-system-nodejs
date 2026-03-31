@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/admin/AdminAuthContext';
+import { useNotifications } from '../components/shared/Notification';
 import styles from './AdminLayout.module.css';
 
 /**
@@ -11,6 +12,7 @@ const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAdmin } = useAdminAuth();
+  const { unreadCount } = useNotifications('USER', user?.id);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -61,6 +63,15 @@ const AdminLayout = ({ children }) => {
       path: '/admin/dashboard',
       roles: ['ADMIN', 'EMPLOYEE']
     },
+    /*
+    {
+      icon: 'fa-bell',
+      label: 'Thông báo',
+      path: '/admin/notifications',
+      roles: ['ADMIN', 'EMPLOYEE'],
+      badge: unreadCount
+    },
+    */
     {
       icon: 'fa-shopping-cart',
       label: 'Đơn hàng',
@@ -113,7 +124,14 @@ const AdminLayout = ({ children }) => {
               className={`${styles.navItem} ${isActive(item.path) ? styles.active : ''}`}
               title={!sidebarOpen ? item.label : ''}
             >
-              <i className={`fas ${item.icon}`}></i>
+              <div className={styles.iconWrapper}>
+                <i className={`fas ${item.icon}`}></i>
+                {item.badge > 0 && (
+                  <span className={styles.sidebarBadge}>
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                )}
+              </div>
               {sidebarOpen && <span>{item.label}</span>}
             </Link>
           ))}
@@ -140,12 +158,6 @@ const AdminLayout = ({ children }) => {
           </div>
 
           <div className={styles.headerRight}>
-            {/* Notifications */}
-            <button className={styles.iconButton}>
-              <i className="fas fa-bell"></i>
-              <span className={styles.badge}>3</span>
-            </button>
-
             {/* User Menu */}
             <div className={styles.userSection}>
               <button
