@@ -17,6 +17,7 @@ var customerRouter = require("./routes/customerRoute");
 var invoiceRouter = require("./routes/invoiceRoute");
 var invoiceItemRouter = require("./routes/invoiceItemRoute");
 var paymentRoutes = require("./routes/paymentRoute");
+var notificationRoutes = require("./routes/notificationRoute");
 
 var app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/customers", customerRouter);
 app.use("/api/invoices",invoiceRouter);
 app.use("/api/invoice-items",invoiceItemRouter);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
