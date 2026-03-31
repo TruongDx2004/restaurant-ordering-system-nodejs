@@ -8,12 +8,26 @@ const InvoiceItem = require("./invoiceItemSchema");
 // ===== ASSOCIATIONS =====
 
 // Category - Dish
-Category.hasMany(Dish, { foreignKey: "categoryId" });
-Dish.belongsTo(Category, { foreignKey: "categoryId" });
+Category.hasMany(Dish, {
+  foreignKey: "categoryId",
+  as: "dishes"
+});
+
+Dish.belongsTo(Category, {
+  foreignKey: "categoryId",
+  as: "category"
+});
 
 // Table - Invoice
-Invoice.belongsTo(Table, { foreignKey: "tableId" });
-Table.hasMany(Invoice, { foreignKey: "tableId" });
+Table.hasMany(Invoice, { 
+  foreignKey: "tableId",
+  as: "invoices"
+});
+
+Invoice.belongsTo(Table, { 
+  foreignKey: "tableId",
+  as: "table"
+});
 
 // Invoice - InvoiceItem
 Invoice.hasMany(InvoiceItem, {
@@ -23,8 +37,14 @@ Invoice.hasMany(InvoiceItem, {
 InvoiceItem.belongsTo(Invoice, { foreignKey: "invoiceId" });
 
 // Dish - InvoiceItem
-InvoiceItem.belongsTo(Dish, { foreignKey: "dishId" });
-Dish.hasMany(InvoiceItem, { foreignKey: "dishId" });
+InvoiceItem.belongsTo(Dish, { 
+  foreignKey: "dishId",
+  as: "dish"
+});
+Dish.hasMany(InvoiceItem, { 
+  foreignKey: "dishId",
+  as: "invoiceItems"
+});
 
 module.exports = {
   User,

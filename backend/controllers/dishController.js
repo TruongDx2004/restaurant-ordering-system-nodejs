@@ -9,23 +9,36 @@ const toResponse = (dish) => ({
   price: dish.price,
   status: dish.status,
   image: dish.image,
-  categoryId: dish.categoryId
+  category: dish.category
+    ? {
+      id: dish.category.id,
+      name: dish.category.name
+    }
+    : null
 });
 
-const toEntity = (data) => ({
-  name: data.name,
-  price: data.price,
-  status: data.status,
-  image: data.image,
-  categoryId: data.categoryId
-});
+const toEntity = (data, file, oldDish = null) => {
+  let imageValue = oldDish?.image || null;
+
+  if (file) {
+    imageValue = `/uploads/${file.filename}`;
+    console.log('Updating dish image:', imageValue);
+  }
+  return {
+    name: data.name,
+    price: parseInt(data.price),
+    status: data.status,
+    image: imageValue,
+    categoryId: parseInt(data.categoryId)
+  };
+};
 
 // ===== CONTROLLER =====
 
 // CREATE
 exports.createDish = async (req, res, next) => {
   try {
-    const entity = toEntity(req.body);
+    const entity = toEntity(req.body, req.file);
 
     const created = await Dish.create(entity);
 
@@ -42,7 +55,15 @@ exports.createDish = async (req, res, next) => {
 // GET BY ID
 exports.getDishById = async (req, res, next) => {
   try {
-    const dish = await Dish.findByPk(req.params.id);
+    const dish = await Dish.findByPk(req.params.id, {
+      include: [
+        {
+          model: Category,
+          as: "category"
+        }
+      ]
+    });
+
 
     if (!dish) throw new Error("Dish not found");
 
@@ -59,7 +80,14 @@ exports.getDishById = async (req, res, next) => {
 // GET ALL
 exports.getAllDishes = async (req, res, next) => {
   try {
-    const dishes = await Dish.findAll();
+    const dishes = await Dish.findAll({
+      include: [
+        {
+          model: Category,
+          as: "category"
+        }
+      ]
+    });
 
     return responseHandler.success(
       res,
@@ -74,11 +102,18 @@ exports.getAllDishes = async (req, res, next) => {
 // UPDATE
 exports.updateDish = async (req, res, next) => {
   try {
-    const dish = await Dish.findByPk(req.params.id);
+    const dish = await Dish.findByPk(req.params.id, {
+      include: [
+        {
+          model: Category,
+          as: "category"
+        }
+      ]
+    });
 
     if (!dish) throw new Error("Dish not found");
 
-    const entity = toEntity(req.body);
+    const entity = toEntity(req.body, req.file, dish);
 
     await dish.update(entity);
 
@@ -115,7 +150,13 @@ exports.deleteDish = async (req, res, next) => {
 exports.getDishesByStatus = async (req, res, next) => {
   try {
     const dishes = await Dish.findAll({
-      where: { status: req.params.status }
+      where: { status: req.params.status },
+      include: [
+        {
+          model: Category,
+          as: "category"
+        }
+      ]
     });
 
     return responseHandler.success(
@@ -132,7 +173,13 @@ exports.getDishesByStatus = async (req, res, next) => {
 exports.getDishesByCategory = async (req, res, next) => {
   try {
     const dishes = await Dish.findAll({
-      where: { categoryId: req.params.categoryId }
+      where: { categoryId: req.params.categoryId },
+      include: [
+        {
+          model: Category,
+          as: "category"
+        }
+      ]
     });
 
     return responseHandler.success(
@@ -155,7 +202,13 @@ exports.searchDishesByName = async (req, res, next) => {
         name: {
           [require("sequelize").Op.like]: `%${name}%`
         }
-      }
+      },
+      include: [
+        {
+          model: Category,
+          as: "category"
+        }
+      ]
     });
 
     return responseHandler.success(

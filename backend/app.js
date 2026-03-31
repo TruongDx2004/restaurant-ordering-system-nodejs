@@ -18,6 +18,7 @@ var invoiceRouter = require("./routes/invoiceRoute");
 var invoiceItemRouter = require("./routes/invoiceItemRoute");
 var paymentRoutes = require("./routes/paymentRoute");
 var notificationRoutes = require("./routes/notificationRoute");
+var excelRouter = require("./routes/excelRoute");
 
 var app = express();
 
@@ -34,6 +35,7 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/', indexRouter);
 app.use("/api/auth", authRouter);
@@ -47,6 +49,7 @@ app.use("/api/invoices",invoiceRouter);
 app.use("/api/invoice-items",invoiceItemRouter);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/excel", excelRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

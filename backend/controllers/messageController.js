@@ -1,15 +1,29 @@
 const Message = require("../schemas/messageSchema");
 const responseHandler = require("../utils/responseHandler");
+const webSocketService = require("../utils/webSocketService");
 
 // sanitize (có thể bỏ nếu không cần)
 const sanitizeMessage = (msg) => {
   return msg.toJSON();
 };
 
+const sendMessageWebSocket = (message) => {
+  if (message.sender == "STAFF") {
+      webSocketService.sendMessageToTable(message.tableId, message.sender, message.content);
+    } else if (message.sender == "SYSTEM") {
+      webSocketService.sendGlobalNotification("SYSTEM_MESSAGE", message.content, { tableId: message.tableId });
+    } else if (message.sender == "CUSTOMER") {
+      webSocketService.sendMessageToStaff(message.tableId, message.sender, message.content);
+    }
+};
+
 // ================= CREATE =================
 exports.createMessage = async (req, res, next) => {
   try {
     const message = await Message.create(req.body);
+
+    // Gửi message qua WebSocket
+    sendMessageWebSocket(message);
 
     return responseHandler.success(
       res,
@@ -68,6 +82,9 @@ exports.updateMessage = async (req, res, next) => {
     }
 
     await message.update(req.body);
+
+    // Gửi cập nhật message qua WebSocket
+    sendMessageWebSocket(message);
 
     return responseHandler.success(
       res,
@@ -182,6 +199,9 @@ exports.sendMessageToTable = async (req, res, next) => {
       sender
     });
 
+    // Gửi message qua WebSocket
+    sendMessageWebSocket(message);
+    
     return responseHandler.success(
       res,
       message,

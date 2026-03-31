@@ -1,0 +1,272 @@
+/* ========================================
+   STATS CARD COMPONENT
+   Modern card design with color variants
+   ======================================== */
+
+.statsCard {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.statsCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading State */
+.statsCard.loading {
+  pointer-events: none;
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.loadingOverlay::after {
+  content: '';
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   ICON CONTAINER
+   ======================================== */
+
+.iconContainer {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.iconContainer i {
+  font-size: 28px;
+  color: white;
+}
+
+/* ========================================
+   CONTENT
+   ======================================== */
+
+.content {
+  flex: 1;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #718096;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #a0aec0;
+  margin: 0;
+}
+
+/* ========================================
+   TREND INDICATOR
+   ======================================== */
+
+.trend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.trend i {
+  font-size: 12px;
+}
+
+.trendUp {
+  color: #48bb78;
+}
+
+.trendDown {
+  color: #f56565;
+}
+
+.trendLabel {
+  font-weight: 400;
+  color: #a0aec0;
+  margin-left: 4px;
+}
+
+/* ========================================
+   COLOR VARIANTS - PRIMARY CARDS
+   ======================================== */
+
+/* Primary Color (Purple) */
+.statsCard.primary.primary .iconContainer {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.statsCard.primary.primary:hover {
+  border-color: #667eea;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+/* Success Color (Green) */
+.statsCard.success.primary .iconContainer {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.statsCard.success.primary:hover {
+  border-color: #48bb78;
+  box-shadow: 0 8px 24px rgba(72, 187, 120, 0.2);
+}
+
+/* Info Color (Blue) */
+.statsCard.info.primary .iconContainer {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.statsCard.info.primary:hover {
+  border-color: #4299e1;
+  box-shadow: 0 8px 24px rgba(66, 153, 225, 0.2);
+}
+
+/* Warning Color (Orange) */
+.statsCard.warning.primary .iconContainer {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.statsCard.warning.primary:hover {
+  border-color: #ed8936;
+  box-shadow: 0 8px 24px rgba(237, 137, 54, 0.2);
+}
+
+/* Danger Color (Red) */
+.statsCard.danger.primary .iconContainer {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.statsCard.danger.primary:hover {
+  border-color: #f56565;
+  box-shadow: 0 8px 24px rgba(245, 101, 101, 0.2);
+}
+
+/* ========================================
+   COLOR VARIANTS - SECONDARY CARDS
+   ======================================== */
+
+.statsCard.secondary {
+  background: #f7fafc;
+}
+
+.statsCard.secondary .iconContainer {
+  background: white;
+  border: 2px solid #e2e8f0;
+}
+
+.statsCard.primary.secondary .iconContainer i {
+  color: #667eea;
+}
+
+.statsCard.success.secondary .iconContainer i {
+  color: #48bb78;
+}
+
+.statsCard.info.secondary .iconContainer i {
+  color: #4299e1;
+}
+
+.statsCard.warning.secondary .iconContainer i {
+  color: #ed8936;
+}
+
+.statsCard.danger.secondary .iconContainer i {
+  color: #f56565;
+}
+
+.statsCard.secondary:hover {
+  background: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .statsCard {
+    padding: 20px;
+  }
+
+  .iconContainer {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 12px;
+  }
+
+  .iconContainer i {
+    font-size: 24px;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
+  .value {
+    font-size: 28px;
+  }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statsCard {
+  animation: fadeIn 0.5s ease-out;
+}

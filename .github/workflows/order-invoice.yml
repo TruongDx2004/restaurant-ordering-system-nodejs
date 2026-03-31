@@ -1,0 +1,33 @@
+name: CI/CD Pipeline Invoice
+
+on:
+  push:
+    branches: 
+      - main
+      - feature/order-invoice
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: backend 
+
+      - name: Run Unit Test
+        run: npm test
+        working-directory: backend  
+
+  cd:
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "🚀 Deploy demo"
