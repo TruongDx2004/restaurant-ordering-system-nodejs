@@ -87,7 +87,21 @@ const paymentApi = {
   },
 
   /**
-   * Update payment status
+   * Tạo thanh toán qua MoMo
+   * @param {Object} paymentData - { invoiceId, amount, orderInfo }
+   * @returns {Promise} Response chứa payUrl từ MoMo
+   */
+  createMoMoPayment: async (paymentData) => {
+    try {
+      const response = await axiosInstance.post('/payments/momo', paymentData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Cập nhật status của payment
    * @param {number} paymentId - Payment ID
    * @param {string} status - Payment status
    * @returns {Promise} Response với payment data

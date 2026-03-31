@@ -114,7 +114,7 @@ const Invoice = () => {
   }, [items]);
 
   // Payment processing
-  const { processPayment, isProcessing, error: paymentError } = useInvoicePayment();
+  const { processPayment, processMoMoPayment, isProcessing, error: paymentError } = useInvoicePayment();
 
   /**
    * Show toast notification
@@ -130,6 +130,14 @@ const Invoice = () => {
   const handlePayment = async (paymentMethod, amount) => {
     if (!invoice || !invoice.id) {
       showToast('Không tìm thấy hóa đơn', 'error');
+      return;
+    }
+
+    if (paymentMethod === 'MOMO') {
+      const result = await processMoMoPayment(invoice.id, amount);
+      if (!result.success) {
+        showToast(result.error || 'Thanh toán MoMo thất bại!', 'error');
+      }
       return;
     }
 

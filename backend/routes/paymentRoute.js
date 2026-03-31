@@ -3,6 +3,7 @@ const router = express.Router();
 
 const controller = require("../controllers/paymentController");
 const { verifyToken, requireRole } = require("../utils/authMiddleware");
+const momo = require("../config/momo");
 
 /**
  * ADMIN
@@ -36,5 +37,11 @@ router.post(
 
 router.patch("/:id/confirm", verifyToken, controller.confirmPayment);
 router.patch("/:id/cancel", verifyToken, controller.cancelPayment);
+
+/**
+ * MOMO
+ */
+router.post("/momo", verifyToken, controller.createMoMoPayment);
+router.post("/momo-ipn", controller.handleMoMoIPN);
 
 module.exports = router;

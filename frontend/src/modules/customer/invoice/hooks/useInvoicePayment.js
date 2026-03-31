@@ -53,6 +53,44 @@ export const useInvoicePayment = () => {
   }, []);
 
   /**
+   * Process MoMo payment
+   * @param {number} invoiceId - Invoice ID
+   * @param {number} amount - Payment amount
+   */
+  const processMoMoPayment = useCallback(async (invoiceId, amount) => {
+    try {
+      setIsProcessing(true);
+      setError(null);
+
+      console.log(`💳 Initiating MoMo payment for invoice ${invoiceId}...`);
+
+      const response = await paymentApi.createMoMoPayment({
+        invoiceId,
+        amount,
+        orderInfo: `Thanh toán hóa đơn #${invoiceId}`
+      });
+
+      // MoMo trả về nhiều URL: payUrl (web), deeplink (app), qrCodeUrl (ảnh QR)
+      // Ta ưu tiên sử dụng payUrl để MoMo tự động điều hướng phù hợp trên từng thiết bị
+      const momoUrl = response.data?.payUrl;
+
+      if (response.success && momoUrl) {
+        // Chuyển hướng đến trang thanh toán của MoMo
+        window.location.href = momoUrl;
+        return { success: true };
+      } else {
+        throw new Error(response.message || 'Không thể tạo thanh toán MoMo');
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Lỗi thanh toán MoMo';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsProcessing(false);
+    }
+  }, []);
+
+  /**
    * Reset payment state
    */
   const resetPayment = useCallback(() => {
@@ -63,6 +101,7 @@ export const useInvoicePayment = () => {
 
   return {
     processPayment,
+    processMoMoPayment,
     isProcessing,
     error,
     paymentResult,

@@ -123,13 +123,17 @@ export const PaymentSection = ({
             <input
               type="radio"
               name="paymentMethod"
-              value="E_WALLET"
-              checked={paymentMethod === 'E_WALLET'}
+              value="MOMO"
+              checked={paymentMethod === 'MOMO'}
               onChange={(e) => setPaymentMethod(e.target.value)}
             />
             <div className={styles.methodInfo}>
-              <i className="fas fa-wallet"></i>
-              <span>Ví điện tử</span>
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" 
+                alt="MoMo" 
+                style={{ width: '24px', height: '24px', marginRight: '8px' }}
+              />
+              <span>Ví MoMo</span>
             </div>
           </label>
         </div>

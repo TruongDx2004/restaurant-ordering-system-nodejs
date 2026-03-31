@@ -11,6 +11,7 @@ import CustomerHome from './modules/customer/home';
 import ProfilePage from './modules/customer/profile';
 import DishDetail from './modules/customer/dish-detail';
 import Invoice from './modules/customer/invoice';
+import PaymentResult from './modules/customer/payment-result';
 import Cart from './modules/customer/cart';
 import Orders from './modules/customer/orders';
 import Messages from './modules/customer/messages';
@@ -145,6 +146,7 @@ function App() {
                   <Route path="dish/:dishId" element={<DishDetail />} />
                   <Route path="cart" element={<Cart />} />
                   <Route path="invoices" element={<Invoice />} />
+                  <Route path="payment-result" element={<PaymentResult />} />
                   <Route 
                     path="inbox" 
                     element={
