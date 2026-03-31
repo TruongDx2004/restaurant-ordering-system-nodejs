@@ -1,0 +1,34 @@
+/* Add to EmployeeLayout.module.css */
+
+.iconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.sidebarBadge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 1.5px solid #1a1c1e;
+}
+
+.bottomNavItem .sidebarBadge {
+    border-color: white;
+    top: -6px;
+    right: -8px;
+}

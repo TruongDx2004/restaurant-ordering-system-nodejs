@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSearch as useSearchContext } from '../contexts/SearchContext';
 import { useCategories } from '../modules/customer/home/hooks';
+import { useNotifications } from '../components/shared/Notification';
 import styles from './CustomerLayout.module.css';
 
 /**
@@ -24,6 +25,7 @@ const CustomerLayout = () => {
 
   // Hooks
   const { user, logout, isAuthenticated } = useAuth();
+  const { unreadCount } = useNotifications('CUSTOMER', user?.id);
   const { updateSearch, clearSearch: clearSearchContext } = useSearchContext();
   const { categories, loading: categoriesLoading } = useCategories();
   const navigate = useNavigate();
@@ -146,12 +148,13 @@ const CustomerLayout = () => {
 
   // Menu items
   const menuItems = [
-    { path: '/customer/profile', icon: 'fas fa-user', label: 'Cá nhân' },
     { path: '/customer/home', icon: 'fas fa-home', label: 'Trang chủ' },
+    // { path: '/customer/notifications', icon: 'fas fa-bell', label: 'Thông báo', badge: unreadCount },
     { path: '/customer/cart', icon: 'fas fa-shopping-cart', label: 'Giỏ hàng' },
     { path: '/customer/orders', icon: 'fas fa-receipt', label: 'Đơn hàng' },
     { path: '/customer/invoices', icon: 'fas fa-file-invoice', label: 'Hóa đơn' },
     { path: '/customer/inbox', icon: 'fas fa-envelope', label: 'Tin nhắn' },
+    { path: '/customer/profile', icon: 'fas fa-user', label: 'Cá nhân' },
   ];
 
   return (
@@ -250,7 +253,14 @@ const CustomerLayout = () => {
                 className={`${styles.sidebarItem} ${location.pathname === item.path ? styles.active : ''}`}
                 onClick={closeSidebar}
               >
-                <i className={item.icon}></i>
+                <div className={styles.sidebarIconWrapper}>
+                  <i className={item.icon}></i>
+                  {item.badge > 0 && (
+                    <span className={styles.sidebarBadge}>
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                </div>
                 <span>{item.label}</span>
               </Link>
             </li>

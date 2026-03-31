@@ -161,17 +161,20 @@
   color: var(--text-color);
 }
 
-/* Cart Icon */
-.cartIcon {
+/* Cart & Notification Icons */
+.cartIcon, .notificationIcon {
   color: var(--text-color);
   font-size: 22px;
   cursor: pointer;
   padding: 8px;
   transition: color 0.2s ease;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.cartIcon:hover {
+.cartIcon:hover, .notificationIcon:hover {
   color: var(--active-color);
 }
 
@@ -464,4 +467,30 @@
     font-size: 14px;
     padding: 6px 12px;
   }
+}
+
+.sidebarIconWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+}
+
+.sidebarBadge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: #ff4d4f;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 1px solid white;
 }
