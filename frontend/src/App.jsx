@@ -14,6 +14,7 @@ import Invoice from './modules/customer/invoice';
 import Cart from './modules/customer/cart';
 import Orders from './modules/customer/orders';
 import Messages from './modules/customer/messages';
+import NotificationPage from './components/shared/Notification/NotificationPage';
 
 // Admin imports
 import { AdminAuthProvider } from './contexts/admin/AdminAuthContext';
@@ -103,6 +104,17 @@ function App() {
                   }
                 />
 
+                <Route
+                  path="/admin/notifications"
+                  element={
+                    <ProtectedAdminRoute>
+                      <AdminLayout>
+                        <NotificationPage role="USER" />
+                      </AdminLayout>
+                    </ProtectedAdminRoute>
+                  }
+                />
+
                 {/* Redirect /admin to dashboard */}
                 <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
@@ -120,6 +132,7 @@ function App() {
                   <Route path="tables" element={<TableManagementEmployee />} />
                   <Route path="kitchen" element={<KitchenView />} />
                   <Route path="inbox" element={<EmployeeInbox />} />
+                  <Route path="notifications" element={<NotificationPage role="USER" />} />
                   <Route index element={<Navigate to="orders" replace />} />
                 </Route>
 
@@ -142,6 +155,7 @@ function App() {
                   <Route path="home" element={<CustomerHome />} />
                   <Route path="profile" element={<ProfilePage />} />
                   <Route path="orders" element={<Orders />} />
+                  <Route path="notifications" element={<NotificationPage role="CUSTOMER" />} />
                   <Route path="dish/:dishId" element={<DishDetail />} />
                   <Route path="cart" element={<Cart />} />
                   <Route path="invoices" element={<Invoice />} />
