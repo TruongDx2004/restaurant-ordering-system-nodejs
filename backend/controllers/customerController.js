@@ -14,10 +14,10 @@ exports.register = async (req, res, next) => {
     try {
         const { fullName, phone, password } = req.body;
 
-        // check phone exists
+        // kiểm tra phone tồn tại
         const existing = await Customer.findOne({ where: { phone } });
         if (existing) {
-            return responseHandler.error(res, "Phone already exists", 400);
+            return responseHandler.error(res, "Số điện thoại đã tồn tại", 400);
         }
 
         // hash password
@@ -33,7 +33,7 @@ exports.register = async (req, res, next) => {
         return responseHandler.success(
             res,
             sanitizeCustomer(customer),
-            "Customer registered successfully"
+            "Đăng ký thành công"
         );
 
     } catch (err) {
@@ -49,13 +49,13 @@ exports.login = async (req, res, next) => {
         const customer = await Customer.findOne({ where: { phone } });
 
         if (!customer) {
-            return responseHandler.error(res, "Invalid phone or password", 400);
+            return responseHandler.error(res, "Số điện thoại hoặc mật khẩu không đúng", 400);
         }
 
         const isMatch = await bcrypt.compare(password, customer.password);
 
         if (!isMatch) {
-            return responseHandler.error(res, "Invalid phone or password", 400);
+            return responseHandler.error(res, "Số điện thoại hoặc mật khẩu không đúng", 400);
         }
 
         // tạo JWT
@@ -67,7 +67,7 @@ exports.login = async (req, res, next) => {
         return responseHandler.success(
             res,
             { accessToken: token },
-            "Login successful"
+            "Đăng nhập thành công"
         );
 
     } catch (err) {

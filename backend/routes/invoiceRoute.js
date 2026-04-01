@@ -1,28 +1,26 @@
-const express = require("express");
-const router = express.Router();
+const express = require("express");const router = express.Router();
 
 const controller = require("../controllers/invoiceController");
-const { verifyToken, requireRole } = require("../utils/authMiddleware");
+const { checkLogin, checkRole } = require("../utils/authHandler");
+const { validate, invoiceValidator } = require("../utils/validateHandler");
 
-// ================= PUBLIC =================
-// khách (có hoặc không login) đều tạo được
-router.post("/", controller.createInvoice);
-router.post("/create-with-items",controller.createInvoiceWithItems);
-router.get("/table-number/:tableNumber/active", controller.getActiveInvoiceByTableNumber);
+// ===== PUBLIC =====
+router.post("/", invoiceValidator.create, validate, controller.createInvoice);
+router.post("/create-with-items", invoiceValidator.createWithItems, validate, controller.createInvoiceWithItems);
+router.get("/table-number/:tableNumber/active", invoiceValidator.getActiveByTableNumber, validate, controller.getActiveInvoiceByTableNumber);
 
-// ================= AUTH =================
-// nhân viên + admin
-router.get("/", verifyToken, controller.getAllInvoices);
-router.get("/status/:status", verifyToken, controller.getInvoicesByStatus);
-router.get("/table/:tableId", verifyToken, controller.getInvoicesByTable);
-router.get("/date-range", verifyToken, controller.getInvoicesByDateRange);
-router.get("/table/:tableId/active", verifyToken, controller.getActiveInvoiceByTable);
-router.get("/:id/calculate-total", verifyToken, controller.calculateInvoiceTotal);
-router.get("/:id", verifyToken, controller.getInvoiceById);
+// ===== AUTH =====
+router.get("/", checkLogin, controller.getAllInvoices);
+router.get("/status/:status", checkLogin, invoiceValidator.getByStatus, validate, controller.getInvoicesByStatus);
+router.get("/table/:tableId", checkLogin, invoiceValidator.getByTable, validate, controller.getInvoicesByTable);
+router.get("/date-range", checkLogin, invoiceValidator.getByDateRange, validate, controller.getInvoicesByDateRange);
+router.get("/table/:tableId/active", checkLogin, invoiceValidator.getActiveByTable, validate, controller.getActiveInvoiceByTable);
+router.get("/:id/calculate-total", checkLogin, invoiceValidator.calculateTotal, validate, controller.calculateInvoiceTotal);
+router.get("/:id", checkLogin, invoiceValidator.getById, validate, controller.getInvoiceById);
 
-// ================= ADMIN =================
-router.put("/:id", verifyToken, requireRole("ADMIN"), controller.updateInvoice);
-router.delete("/:id", verifyToken, requireRole("ADMIN"), controller.deleteInvoice);
-router.patch("/:id/status", verifyToken, requireRole("ADMIN"), controller.updateInvoiceStatus);
+// ===== ADMIN =====
+router.put("/:id", checkLogin, checkRole("ADMIN"), invoiceValidator.update, validate, controller.updateInvoice);
+router.delete("/:id", checkLogin, checkRole("ADMIN"), invoiceValidator.delete, validate, controller.deleteInvoice);
+router.patch("/:id/status", checkLogin, checkRole("ADMIN"), invoiceValidator.updateStatus, validate, controller.updateInvoiceStatus);
 
 module.exports = router;

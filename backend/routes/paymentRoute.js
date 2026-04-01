@@ -2,42 +2,29 @@ const express = require("express");
 const router = express.Router();
 
 const controller = require("../controllers/paymentController");
-const { verifyToken, requireRole } = require("../utils/authMiddleware");
+const { checkLogin, checkRole } = require("../utils/authHandler");
 const momo = require("../config/momo");
+const { validate, paymentValidator } = require("../utils/validateHandler");
 
-/**
- * ADMIN
- */
-router.post("/", verifyToken, requireRole("ADMIN"), controller.createPayment);
-router.put("/:id", verifyToken, requireRole("ADMIN"), controller.updatePayment);
-router.delete("/:id", verifyToken, requireRole("ADMIN"), controller.deletePayment);
+router.post("/", checkLogin, checkRole("ADMIN"), paymentValidator.create, validate, controller.createPayment);
+router.put("/:id", checkLogin, checkRole("ADMIN"), paymentValidator.update, validate, controller.updatePayment);
+router.delete("/:id", checkLogin, checkRole("ADMIN"), paymentValidator.delete, validate, controller.deletePayment);
 
-/**
- * AUTH USER
- */
-router.get("/", verifyToken, controller.getAllPayments);
-router.get("/:id", verifyToken, controller.getPaymentById);
+router.get("/", checkLogin, controller.getAllPayments);
+router.get("/:id", checkLogin, paymentValidator.getById, validate, controller.getPaymentById);
+router.get("/invoice/:invoiceId", checkLogin, paymentValidator.getByInvoice, validate, controller.getPaymentByInvoice);
+router.get("/transaction/:transactionCode", checkLogin, paymentValidator.getByTransaction, validate, controller.getPaymentByTransactionCode);
+router.get("/status/:status", checkLogin, paymentValidator.getByStatus, validate, controller.getPaymentsByStatus);
+router.get("/method/:method", checkLogin, paymentValidator.getByMethod, validate, controller.getPaymentsByMethod);
 
-router.get("/invoice/:invoiceId", verifyToken, controller.getPaymentByInvoice);
-router.get("/transaction/:transactionCode", verifyToken, controller.getPaymentByTransactionCode);
+router.patch("/:id/status", checkLogin, paymentValidator.updateStatus, validate, controller.updatePaymentStatus);
+router.post("/process", checkLogin, paymentValidator.process, validate, controller.processPayment);
+router.post("/request-cash", checkLogin, paymentValidator.requestCash, validate, controller.requestCashPayment);
+router.patch("/:id/confirm", checkLogin, paymentValidator.confirm, validate, controller.confirmPayment);
+router.patch("/confirm-by-invoice", checkLogin, paymentValidator.confirmByInvoice, validate, controller.confirmPaymentByInvoice);
+router.patch("/:id/cancel", checkLogin, paymentValidator.cancel, validate, controller.cancelPayment);
 
-router.get("/status/:status", verifyToken, controller.getPaymentsByStatus);
-router.get("/method/:method", verifyToken, controller.getPaymentsByMethod);
-
-/**
- * ACTIONS
- */
-router.patch("/:id/status", verifyToken, controller.updatePaymentStatus);
-router.post("/process", verifyToken, controller.processPayment);
-router.post("/request-cash", verifyToken, controller.requestCashPayment);
-router.patch("/:id/confirm", verifyToken, controller.confirmPayment);
-router.patch("/confirm-by-invoice", verifyToken, controller.confirmPaymentByInvoice);
-router.patch("/:id/cancel", verifyToken, controller.cancelPayment);
-
-/**
- * MOMO
- */
-router.post("/momo", verifyToken, controller.createMoMoPayment);
-router.post("/momo-ipn", controller.handleMoMoIPN);
+router.post("/momo", checkLogin, paymentValidator.momo, validate, controller.createMoMoPayment);
+router.post("/momo-ipn", paymentValidator.momoIPN, validate, controller.handleMoMoIPN);
 
 module.exports = router;

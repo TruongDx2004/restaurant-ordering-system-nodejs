@@ -2,20 +2,21 @@ const express = require("express");
 const router = express.Router();
 
 const categoryController = require("../controllers/categoryController");
-const { verifyToken, requireRole } = require("../utils/authMiddleware");
+const { checkLogin, checkRole } = require("../utils/authHandler");
+const { validate, categoryValidator } = require("../utils/validateHandler");
 
-// ===== ADMIN ONLY =====
-router.post("/", verifyToken, requireRole("ADMIN"), categoryController.createCategory);
+// ===== ADMIN =====
+router.post("/", checkLogin, checkRole("ADMIN"), categoryValidator.create, validate, categoryController.createCategory);
 
-router.put("/:id", verifyToken, requireRole("ADMIN"), categoryController.updateCategory);
+router.put("/:id", checkLogin, checkRole("ADMIN"), categoryValidator.update, validate, categoryController.updateCategory);
 
-router.delete("/:id", verifyToken, requireRole("ADMIN"), categoryController.deleteCategory);
+router.delete("/:id", checkLogin, checkRole("ADMIN"), categoryValidator.delete, validate, categoryController.deleteCategory);
 
 // ===== PUBLIC =====
+router.get("/:id", categoryValidator.getById, validate, categoryController.getCategoryById);
+
+router.get("/name/:name", categoryValidator.getByName, validate, categoryController.getCategoryByName);
+
 router.get("/", categoryController.getAllCategories);
-
-router.get("/name/:name", categoryController.getCategoryByName);
-
-router.get("/:id", categoryController.getCategoryById);
 
 module.exports = router;

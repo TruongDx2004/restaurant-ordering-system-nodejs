@@ -1,7 +1,7 @@
 const Category = require("../schemas/categorySchema");
 const responseHandler = require("../utils/responseHandler");
 
-// ===== INTERNAL MAPPER =====
+// ===== MAPPER =====
 const toResponse = (category) => ({
   id: category.id,
   name: category.name
@@ -23,7 +23,7 @@ exports.createCategory = async (req, res, next) => {
     return responseHandler.success(
       res,
       toResponse(created),
-      "Category created successfully"
+      "Danh mục được tạo thành công"
     );
   } catch (err) {
     next(err);
@@ -40,7 +40,7 @@ exports.getCategoryById = async (req, res, next) => {
     return responseHandler.success(
       res,
       toResponse(category),
-      "Category retrieved successfully"
+      "Danh mục được lấy thành công"
     );
   } catch (err) {
     next(err);
@@ -55,7 +55,7 @@ exports.getAllCategories = async (req, res, next) => {
     return responseHandler.success(
       res,
       categories.map(toResponse),
-      "Categories retrieved successfully"
+      "Danh mục được lấy thành công"
     );
   } catch (err) {
     next(err);
@@ -76,7 +76,7 @@ exports.updateCategory = async (req, res, next) => {
     return responseHandler.success(
       res,
       toResponse(category),
-      "Category updated successfully"
+      "Danh mục chỉnh sửa thành công"
     );
   } catch (err) {
     next(err);
@@ -95,7 +95,7 @@ exports.deleteCategory = async (req, res, next) => {
     return responseHandler.success(
       res,
       null,
-      "Category deleted successfully"
+      "Xóa danh mục thành công"
     );
   } catch (err) {
     next(err);

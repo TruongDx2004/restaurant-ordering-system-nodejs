@@ -1,6 +1,7 @@
 const Dish = require("../schemas/dishSchema");
 const Category = require("../schemas/categorySchema");
 const responseHandler = require("../utils/responseHandler");
+const sequelize = require("../config/db");
 
 // ===== MAPPER =====
 const toResponse = (dish) => ({
@@ -45,7 +46,7 @@ exports.createDish = async (req, res, next) => {
     return responseHandler.success(
       res,
       toResponse(created),
-      "Dish created successfully"
+      "Món ăn được tạo thành công"
     );
   } catch (err) {
     next(err);
@@ -65,12 +66,12 @@ exports.getDishById = async (req, res, next) => {
     });
 
 
-    if (!dish) throw new Error("Dish not found");
+    if (!dish) throw new Error("Không tìm thấy món ăn");
 
     return responseHandler.success(
       res,
       toResponse(dish),
-      "Dish retrieved successfully"
+      "Món ăn được tìm thấy"
     );
   } catch (err) {
     next(err);
@@ -92,7 +93,7 @@ exports.getAllDishes = async (req, res, next) => {
     return responseHandler.success(
       res,
       dishes.map(toResponse),
-      "Dishes retrieved successfully"
+      "Món ăn được tìm thấy"
     );
   } catch (err) {
     next(err);
@@ -111,7 +112,7 @@ exports.updateDish = async (req, res, next) => {
       ]
     });
 
-    if (!dish) throw new Error("Dish not found");
+    if (!dish) throw new Error("Không tìm thấy món ăn");
 
     const entity = toEntity(req.body, req.file, dish);
 
@@ -120,7 +121,7 @@ exports.updateDish = async (req, res, next) => {
     return responseHandler.success(
       res,
       toResponse(dish),
-      "Dish updated successfully"
+      "Chỉnh sửa món ăn thành công"
     );
   } catch (err) {
     next(err);
@@ -132,14 +133,14 @@ exports.deleteDish = async (req, res, next) => {
   try {
     const dish = await Dish.findByPk(req.params.id);
 
-    if (!dish) throw new Error("Dish not found");
+    if (!dish) throw new Error("Không tìm thấy món ăn");
 
     await dish.destroy();
 
     return responseHandler.success(
       res,
       null,
-      "Dish deleted successfully"
+      "Xóa món ăn thành công"
     );
   } catch (err) {
     next(err);
@@ -162,7 +163,7 @@ exports.getDishesByStatus = async (req, res, next) => {
     return responseHandler.success(
       res,
       dishes.map(toResponse),
-      "Dishes retrieved successfully"
+      "Tải danh sách món ăn thành công"
     );
   } catch (err) {
     next(err);
@@ -185,7 +186,7 @@ exports.getDishesByCategory = async (req, res, next) => {
     return responseHandler.success(
       res,
       dishes.map(toResponse),
-      "Dishes retrieved successfully"
+      "Tải danh sách món ăn thành công"
     );
   } catch (err) {
     next(err);
@@ -200,7 +201,7 @@ exports.searchDishesByName = async (req, res, next) => {
     const dishes = await Dish.findAll({
       where: {
         name: {
-          [require("sequelize").Op.like]: `%${name}%`
+          [sequelize.Op.like]: `%${name}%`
         }
       },
       include: [
@@ -214,7 +215,7 @@ exports.searchDishesByName = async (req, res, next) => {
     return responseHandler.success(
       res,
       dishes.map(toResponse),
-      "Dishes retrieved successfully"
+      "Tải danh sách món ăn thành công"
     );
   } catch (err) {
     next(err);
@@ -227,31 +228,27 @@ exports.updateDishStatus = async (req, res, next) => {
     const { id } = req.params;
     let { status } = req.query;
 
-    // 1. Validate status tồn tại
     if (!status) {
-      throw new Error("Status is required");
+      throw new Error("Yêu cầu trạng thái");
     }
 
-    // 2. Chuẩn hóa input (tránh client gửi sai format)
     status = status.toUpperCase().trim();
 
     const allowedStatus = ["AVAILABLE", "SOLD_OUT"];
 
     if (!allowedStatus.includes(status)) {
-      throw new Error("Invalid status value");
+      throw new Error("Trạng thái không hợp lệ");
     }
 
-    // 3. Check dish tồn tại
     const dish = await Dish.findByPk(id);
-    if (!dish) throw new Error("Dish not found");
+    if (!dish) throw new Error("Không tim thấy món ăn")
 
-    // 4. Update
     await dish.update({ status });
 
     return responseHandler.success(
       res,
       toResponse(dish),
-      "Dish status updated successfully"
+      "Chỉnh sửa món ăn thành công"
     );
   } catch (err) {
     next(err);

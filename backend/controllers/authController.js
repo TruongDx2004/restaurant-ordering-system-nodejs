@@ -23,7 +23,7 @@ exports.register = async (req, res, next) => {
     });
 
     if (exist) {
-      return responseHandler.error(res, "Email already exists", 400);
+      return responseHandler.error(res, "Email đã tồn tại", 400);
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -39,7 +39,7 @@ exports.register = async (req, res, next) => {
     return responseHandler.success(
       res,
       { id: user.id },
-      "User registered successfully"
+      "User đăng ký thành công"
     );
 
   } catch (err) {
@@ -57,25 +57,25 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return responseHandler.error(res, "User not found", 404);
+      return responseHandler.error(res, "Không tìm thấy người dùng", 404);
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return responseHandler.error(res, "Invalid password", 401);
+      return responseHandler.error(res, "Mật khẩu không đúng", 401);
     }
 
     const accessToken = authHandler.generateAccessToken(user);
     const refreshToken = authHandler.generateRefreshToken(user);
 
-    // lưu refresh token (giống Java)
+    // lưu refresh token
     await user.update({ refreshToken });
 
     return responseHandler.success(
       res,
       {
-        token: accessToken, // 🔥 rename giống Java
+        token: accessToken,
         refreshToken: refreshToken,
         user: sanitizeUser(user)
       },
@@ -96,7 +96,7 @@ exports.refreshToken = async (req, res, next) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      return responseHandler.error(res, "Refresh token required", 400);
+      return responseHandler.error(res, "Refresh token không được cung cấp", 400);
     }
 
     const user = await User.findOne({
@@ -104,7 +104,7 @@ exports.refreshToken = async (req, res, next) => {
     });
 
     if (!user) {
-      return responseHandler.error(res, "Invalid refresh token", 403);
+      return responseHandler.error(res, "Refresh token không hợp lệ", 403);
     }
 
     const accessToken = authHandler.generateAccessToken(user);
@@ -112,7 +112,7 @@ exports.refreshToken = async (req, res, next) => {
     return responseHandler.success(
       res,
       { accessToken },
-      "Token refreshed"
+      "Access token mới đã được tạo"
     );
 
   } catch (err) {

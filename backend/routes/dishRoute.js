@@ -2,14 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const dishController = require("../controllers/dishController");
-const { verifyToken, requireRole } = require("../utils/authMiddleware");
+const { checkLogin, checkRole } = require("../utils/authHandler");
+const { validate, dishValidator } = require("../utils/validateHandler");
 const upload = require("../utils/upload");
 
 // ===== ADMIN =====
-router.post("/", verifyToken, requireRole("ADMIN"), upload.single("image"), dishController.createDish);
-router.put("/:id", verifyToken, requireRole("ADMIN"), upload.single("image"), dishController.updateDish);
-router.delete("/:id", verifyToken, requireRole("ADMIN"), dishController.deleteDish);
-router.patch("/:id/status", verifyToken, requireRole("ADMIN"), dishController.updateDishStatus);
+router.post("/", checkLogin, checkRole("ADMIN"), upload.single("image"), dishValidator.create, validate, dishController.createDish);
+router.put("/:id", checkLogin, checkRole("ADMIN"), upload.single("image"), dishValidator.update, validate, dishController.updateDish);
+router.delete("/:id", checkLogin, checkRole("ADMIN"), dishValidator.delete, validate, dishController.deleteDish);
+router.patch("/:id/status", checkLogin, checkRole("ADMIN"), dishValidator.updateStatus, validate, dishController.updateDishStatus);
 
 // ===== PUBLIC =====
 router.get("/", dishController.getAllDishes);

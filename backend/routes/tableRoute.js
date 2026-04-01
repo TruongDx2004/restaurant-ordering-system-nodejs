@@ -1,54 +1,21 @@
 const express = require("express");
 const router = express.Router();
 
-const tableController = require("../controllers/tableController");
-const { verifyToken, requireRole } = require("../utils/authMiddleware");
+const controller = require("../controllers/tableController");
+const { checkLogin, checkRole } = require("../utils/authHandler");
+const { tableValidator, validate } = require("../utils/validateHandler");
 
-/**
- * =========================
- * ADMIN ONLY
- * =========================
- */
+router.post("/", checkLogin, checkRole("ADMIN"), tableValidator.create, validate, controller.createTable);
+router.put("/:id", checkLogin, checkRole("ADMIN"), tableValidator.update, validate, controller.updateTable);
+router.delete("/:id", checkLogin, checkRole("ADMIN"), tableValidator.idParam, validate, controller.deleteTable);
+router.patch("/:id/status", checkLogin, checkRole("ADMIN", "EMPLOYEE"), tableValidator.updateStatus, validate, controller.updateTableStatus);
 
-// CREATE TABLE
-router.post("/", verifyToken, requireRole("ADMIN"), tableController.createTable);
+router.get("/", checkLogin, controller.getAllTables);
+router.get("/active", checkLogin, controller.getActiveTables);
+router.get("/number/:tableNumber", checkLogin, tableValidator.tableNumberParam, validate, controller.getTableByNumber);
+router.get("/status/:status", checkLogin, tableValidator.statusParam, validate, controller.getTablesByStatus);
+router.get("/area/:area", checkLogin, tableValidator.areaParam, validate, controller.getTablesByArea);
 
-// UPDATE TABLE
-router.put("/:id", verifyToken, requireRole("ADMIN"), tableController.updateTable);
-
-// DELETE TABLE
-router.delete("/:id", verifyToken, requireRole("ADMIN"), tableController.deleteTable);
-
-// UPDATE STATUS
-router.patch("/:id/status", verifyToken, requireRole("ADMIN", "EMPLOYEE"), tableController.updateTableStatus);
-
-
-/**
- * =========================
- * AUTHENTICATED USERS (ADMIN + EMPLOYEE)
- * =========================
- */
-
-// GET ALL
-router.get("/", verifyToken, tableController.getAllTables);
-
-// GET ACTIVE TABLES
-router.get("/active", verifyToken, tableController.getActiveTables);
-
-// GET BY NUMBER
-router.get("/number/:tableNumber", verifyToken, tableController.getTableByNumber);
-
-// GET BY STATUS
-router.get("/status/:status", verifyToken, tableController.getTablesByStatus);
-
-// GET BY AREA
-router.get("/area/:area", verifyToken, tableController.getTablesByArea);
-
-/**
- * PUBLIC
- */
-
-// GET BY ID
-router.get("/:id", tableController.getTableById);
+router.get("/:id", tableValidator.idParam, validate, controller.getTableById);
 
 module.exports = router;
