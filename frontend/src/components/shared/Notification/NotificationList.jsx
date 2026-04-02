@@ -13,13 +13,13 @@ const NOTIFICATION_TYPES = {
 const NotificationList = ({ recipientType, recipientId }) => {
     const [activeTab, setActiveTab] = useState(NOTIFICATION_TYPES.PAYMENT);
     const [filterUnread, setFilterUnread] = useState(false);
-    
-    const { 
-        notifications, 
-        loading, 
-        markAsRead, 
-        markAllAsRead, 
-        deleteNotification 
+
+    const {
+        notifications,
+        loading,
+        markAsRead,
+        markAllAsRead,
+        deleteNotification
     } = useNotifications(recipientType, recipientId);
 
     // Phân loại thông báo dựa trên nội dung
@@ -31,13 +31,12 @@ const NotificationList = ({ recipientType, recipientId }) => {
         };
 
         notifications.forEach(n => {
-            const title = n.title.toLowerCase();
-            const message = n.message.toLowerCase();
+            const type = n.type;
 
             let targetCategory = NOTIFICATION_TYPES.SYSTEM;
-            if (title.includes('thanh toán') || message.includes('thanh toán') || message.includes('tiền mặt') || message.includes('ví')) {
+            if (type === "CASH_PAYMENT_REQUEST" || type === "PAYMENT_STATUS") {
                 targetCategory = NOTIFICATION_TYPES.PAYMENT;
-            } else if (title.includes('đơn hàng') || message.includes('đơn hàng') || title.includes('gọi món')) {
+            } else if (type === "ORDER_STATUS" || type === "NEW_ORDER") {
                 targetCategory = NOTIFICATION_TYPES.ORDER;
             }
 
@@ -49,10 +48,15 @@ const NotificationList = ({ recipientType, recipientId }) => {
 
         // Sắp xếp Payment: Tiền mặt lên đầu
         categories[NOTIFICATION_TYPES.PAYMENT].sort((a, b) => {
-            const isACash = a.message.toLowerCase().includes('tiền mặt');
-            const isBCash = b.message.toLowerCase().includes('tiền mặt');
+            const msgA = (a.message || "").toLowerCase();
+            const msgB = (b.message || "").toLowerCase();
+
+            const isACash = msgA.includes("tiền mặt");
+            const isBCash = msgB.includes("tiền mặt");
+
             if (isACash && !isBCash) return -1;
             if (!isACash && isBCash) return 1;
+
             return new Date(b.createdAt) - new Date(a.createdAt);
         });
 
@@ -62,11 +66,11 @@ const NotificationList = ({ recipientType, recipientId }) => {
     const getUnreadCount = (type = null) => {
         if (!type) return notifications.filter(n => !n.read).length;
         return notifications.filter(n => {
-            const isType = type === NOTIFICATION_TYPES.PAYMENT 
+            const isType = type === NOTIFICATION_TYPES.PAYMENT
                 ? (n.title + n.message).toLowerCase().match(/thanh toán|tiền mặt|ví/)
                 : type === NOTIFICATION_TYPES.ORDER
-                ? (n.title + n.message).toLowerCase().match(/đơn hàng|gọi món/)
-                : !(n.title + n.message).toLowerCase().match(/thanh toán|tiền mặt|ví|đơn hàng|gọi món/);
+                    ? (n.title + n.message).toLowerCase().match(/đơn hàng|gọi món/)
+                    : !(n.title + n.message).toLowerCase().match(/thanh toán|tiền mặt|ví|đơn hàng|gọi món/);
             return isType && !n.read;
         }).length;
     };
@@ -90,10 +94,10 @@ const NotificationList = ({ recipientType, recipientId }) => {
                 </div>
                 <div className={styles.actions}>
                     <label className={styles.toggleFilter}>
-                        <input 
-                            type="checkbox" 
-                            checked={filterUnread} 
-                            onChange={(e) => setFilterUnread(e.target.checked)} 
+                        <input
+                            type="checkbox"
+                            checked={filterUnread}
+                            onChange={(e) => setFilterUnread(e.target.checked)}
                         />
                         <span className={styles.toggleSlider}></span>
                         <span className={styles.toggleText}>Chưa đọc</span>
@@ -107,13 +111,13 @@ const NotificationList = ({ recipientType, recipientId }) => {
             {/* Hệ thống Tabs hiện đại */}
             <div className={styles.tabsContainer}>
                 {Object.values(NOTIFICATION_TYPES).map(type => (
-                    <button 
+                    <button
                         key={type}
                         className={`${styles.tabBtn} ${activeTab === type ? styles.active : ''}`}
                         onClick={() => setActiveTab(type)}
                     >
                         <span className={styles.tabLabel}>
-                            {type === 'PAYMENT' ? 'Thanh toán' : type === 'ORDER' ? 'Đơn hàng' : 'Hệ thống'}
+                            {type === NOTIFICATION_TYPES.PAYMENT ? 'Thanh toán' : type === NOTIFICATION_TYPES.SYSTEM ? 'Hệ thống' : 'Đơn hàng'}
                         </span>
                         {getUnreadCount(type) > 0 && (
                             <span className={styles.badge}>{getUnreadCount(type)}</span>
@@ -121,7 +125,7 @@ const NotificationList = ({ recipientType, recipientId }) => {
                     </button>
                 ))}
             </div>
-            
+
             <div className={styles.scrollArea}>
                 {categorizedNotifications[activeTab].length === 0 ? (
                     <div className={styles.emptyState}>
@@ -134,8 +138,8 @@ const NotificationList = ({ recipientType, recipientId }) => {
                 ) : (
                     <div className={styles.list}>
                         {categorizedNotifications[activeTab].map(notification => (
-                            <NotificationItem 
-                                key={notification.id} 
+                            <NotificationItem
+                                key={notification.id}
                                 notification={notification}
                                 onMarkRead={markAsRead}
                                 onDelete={deleteNotification}

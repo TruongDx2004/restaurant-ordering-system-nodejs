@@ -37,29 +37,38 @@ const Invoice = () => {
     if (!invoice?.id) return;
 
     console.log(`[Invoice] Subscribing to updates for invoice ${invoice.id}`);
-    
-    // 1. Lắng nghe trạng thái thanh toán/hóa đơn
+
     const unsubscribePayment = webSocketService.subscribe('/topic/payments', (message) => {
       console.log('[Invoice] Payment update received:', message);
-      if (message.orderId === invoice.id || message.orderId == invoice.id) {
-        showToast(`Trạng thái hóa đơn: ${message.data}`, 'info');
+      if (message.invoiceId === invoice.id || message.invoiceId == invoice.id) {
         if (message.data === 'SUCCESS' || message.data === 'PAID') {
-          setIsWaitingModalOpen(false); // Đóng modal nếu đã thanh toán thành công
+          showToast('Thanh toán thành công!', 'success');
+          setTimeout(() => {
+            navigate('/customer/payment-result', {
+              state: {
+                success: true,
+                orderId: invoice.id,
+                amount: invoice.totalAmount,
+                method: 'CASH',
+                message: 'Thanh toán tiền mặt thành công'
+              }
+            });
+          }, 500);
+        } else {
+          showToast(`Trạng thái hóa đơn: ${message.data}`, 'info');
         }
-        refetch(); // Cập nhật lại UI để đổi màu trạng thái
-      }
-    });
-
-    // 2. Lắng nghe trạng thái món ăn (để cập nhật bảng món ăn)
-    const unsubscribeItems = webSocketService.subscribe('/topic/orders/status', (message) => {
-      if (message.orderId === invoice.id) {
         refetch();
       }
     });
 
-    // 3. Lắng nghe khi có đơn hàng mới từ nhân viên
+    const unsubscribeItems = webSocketService.subscribe('/topic/orders/status', (message) => {
+      if (message.invoiceId === invoice.id) {
+        refetch();
+      }
+    });
+
     const unsubscribeOders = webSocketService.subscribe('/topic/orders', (message) => {
-      if (message.orderId === invoice.id) {
+      if (message.invoiceId === invoice.id) {
         refetch();
       }
     });
@@ -94,10 +103,10 @@ const Invoice = () => {
       if (!dishId) return;
 
       if (!grouped[dishId]) {
-        grouped[dishId] = { 
-          ...item, 
-          quantity: 0, 
-          totalPrice: 0 
+        grouped[dishId] = {
+          ...item,
+          quantity: 0,
+          totalPrice: 0
         };
       }
 
@@ -118,12 +127,12 @@ const Invoice = () => {
   }, [items]);
 
   // Payment processing
-  const { 
-    processPayment, 
-    processMoMoPayment, 
+  const {
+    processPayment,
+    processMoMoPayment,
     requestCashPayment,
-    isProcessing, 
-    error: paymentError 
+    isProcessing,
+    error: paymentError
   } = useInvoicePayment();
 
   /**
@@ -165,14 +174,16 @@ const Invoice = () => {
 
     if (result.success) {
       showToast('Thanh toán thành công!', 'success');
-      
+
       // Redirect to success page after 2 seconds
       setTimeout(() => {
-        navigate('/customer/payment-success', {
+        navigate('/customer/payment-result', {
           state: {
-            payment: result.payment,
-            invoice: invoice,
-            items: items
+            success: true,
+            orderId: invoice.id,
+            amount: amount,
+            method: paymentMethod,
+            message: 'Thanh toán thành công'
           }
         });
       }, 2000);
@@ -250,88 +261,88 @@ const Invoice = () => {
     <>
       <DesktopWarning />
       <div className={styles.invoiceContainer}>
-      {/* Invoice Header */}
-      <div className={styles.invoiceHeader}>
-        <div className={styles.headerTop}>
-          <button 
-            onClick={() => navigate(-1)} 
-            className={styles.backBtn}
-          >
-            <i className="fas fa-arrow-left"></i>
-          </button>
-          <h1>Hóa Đơn</h1>
-          <button 
-            onClick={() => window.print()} 
-            className={styles.printBtn}
-          >
-            <i className="fas fa-print"></i>
-          </button>
+        {/* Invoice Header */}
+        <div className={styles.invoiceHeader}>
+          <div className={styles.headerTop}>
+            <button
+              onClick={() => navigate(-1)}
+              className={styles.backBtn}
+            >
+              <i className="fas fa-arrow-left"></i>
+            </button>
+            <h1>Hóa Đơn</h1>
+            <button
+              onClick={() => window.print()}
+              className={styles.printBtn}
+            >
+              <i className="fas fa-print"></i>
+            </button>
+          </div>
+
+          <div className={styles.invoiceInfo}>
+            <div className={styles.infoRow}>
+              <span className={styles.label}>Mã hóa đơn:</span>
+              <span className={styles.value}>#{invoice.id}</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.label}>Bàn:</span>
+              <span className={styles.value}>{invoice.table?.tableNumber || tableNumber}</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.label}>Ngày giờ:</span>
+              <span className={styles.value}>{formatDate(invoice.createdAt)}</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.label}>Trạng thái:</span>
+              <span className={`${styles.status} ${styles[invoice.status?.toLowerCase()]}`}>
+                {invoice.status === 'OPEN' ? 'Đang phục vụ' :
+                  invoice.status === 'PAID' ? 'Đã thanh toán' :
+                    invoice.status}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className={styles.invoiceInfo}>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Mã hóa đơn:</span>
-            <span className={styles.value}>#{invoice.id}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Bàn:</span>
-            <span className={styles.value}>{invoice.table?.tableNumber || tableNumber}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Ngày giờ:</span>
-            <span className={styles.value}>{formatDate(invoice.createdAt)}</span>
-          </div>
-          <div className={styles.infoRow}>
-            <span className={styles.label}>Trạng thái:</span>
-            <span className={`${styles.status} ${styles[invoice.status?.toLowerCase()]}`}>
-              {invoice.status === 'OPEN' ? 'Đang phục vụ' : 
-               invoice.status === 'PAID' ? 'Đã thanh toán' : 
-               invoice.status}
-            </span>
-          </div>
-        </div>
-      </div>
+        {/* Invoice Table */}
+        <InvoiceTable items={groupedItems} />
 
-      {/* Invoice Table */}
-      <InvoiceTable items={groupedItems} />
+        {/* Payment Section */}
+        {invoice.status === 'OPEN' && (
+          <PaymentSection
+            invoice={invoice}
+            items={groupedItems}
+            onPayment={handlePayment}
+            isProcessing={isProcessing}
+          />
+        )}
 
-      {/* Payment Section */}
-      {invoice.status === 'OPEN' && (
-        <PaymentSection
-          invoice={invoice}
-          items={groupedItems}
-          onPayment={handlePayment}
-          isProcessing={isProcessing}
+        {/* Payment Waiting Modal */}
+        <PaymentWaitingModal
+          isOpen={isWaitingModalOpen}
+          onClose={() => setIsWaitingModalOpen(false)}
+          onRetry={() => handlePayment('CASH', invoice?.totalAmount)}
+          tableNumber={invoice?.table?.tableNumber || tableNumber}
         />
-      )}
 
-      {/* Payment Waiting Modal */}
-      <PaymentWaitingModal
-        isOpen={isWaitingModalOpen}
-        onClose={() => setIsWaitingModalOpen(false)}
-        onRetry={() => handlePayment('CASH', invoice?.totalAmount)}
-        tableNumber={invoice?.table?.tableNumber || tableNumber}
-      />
+        {/* Already Paid Message */}
+        {invoice.status === 'PAID' && (
+          <div className={styles.paidMessage}>
+            <i className="fas fa-check-circle"></i>
+            <h3>Hóa đơn đã được thanh toán</h3>
+            <p>Cảm ơn bạn đã sử dụng dịch vụ!</p>
+            {invoice.paidAt && (
+              <p className={styles.paidTime}>Thanh toán lúc: {formatDate(invoice.paidAt)}</p>
+            )}
+          </div>
+        )}
 
-      {/* Already Paid Message */}
-      {invoice.status === 'PAID' && (
-        <div className={styles.paidMessage}>
-          <i className="fas fa-check-circle"></i>
-          <h3>Hóa đơn đã được thanh toán</h3>
-          <p>Cảm ơn bạn đã sử dụng dịch vụ!</p>
-          {invoice.paidAt && (
-            <p className={styles.paidTime}>Thanh toán lúc: {formatDate(invoice.paidAt)}</p>
-          )}
-        </div>
-      )}
-
-      {/* Toast Notification */}
-      {toast && (
-        <div className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}>
-          {toast.message}
-        </div>
-      )}
-    </div>
+        {/* Toast Notification */}
+        {toast && (
+          <div className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}>
+            {toast.message}
+          </div>
+        )}
+      </div>
     </>
   );
 };

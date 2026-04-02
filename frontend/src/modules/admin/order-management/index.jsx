@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { invoiceApi } from '../../../api';
+import { useModal } from '../../../contexts/ModalContext';
 import styles from './index.module.css';
 
 /**
@@ -7,6 +8,7 @@ import styles from './index.module.css';
  * Manages customer orders/invoices
  */
 const OrderManagement = () => {
+  const { showAlert } = useModal();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,7 +57,7 @@ const OrderManagement = () => {
         await loadOrders();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Không thể cập nhật trạng thái');
+      showAlert(err.response?.data?.message || 'Không thể cập nhật trạng thái', 'Lỗi', 'error');
     }
   };
 

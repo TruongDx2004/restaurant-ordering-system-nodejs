@@ -12,9 +12,30 @@ const PaymentResult = () => {
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    // Parse query parameters from MoMo redirect URL
+    // 1. Ưu tiên lấy từ location.state (Dành cho thanh toán tiền mặt hoặc chuyển trang từ Invoice)
+    if (location.state) {
+      const { success, orderId, message, amount, transId, time, method } = location.state;
+      setResult({
+        success: success !== false,
+        orderId: orderId || 'N/A',
+        message: message || 'Giao dịch thành công',
+        amount: amount || 0,
+        transId: transId || '',
+        time: time || new Date().toLocaleString('vi-VN'),
+        method: method || 'CASH'
+      });
+      return;
+    }
+
+    // 2. Parse query parameters (Dành cho MoMo redirect URL)
     const queryParams = new URLSearchParams(location.search);
     const resultCode = queryParams.get('resultCode');
+    
+    // Nếu không có cả state và query params thì quay lại
+    if (!resultCode && !location.state) {
+        return;
+    }
+
     const orderId = queryParams.get('orderId');
     const message = queryParams.get('message');
     const amount = queryParams.get('amount');
@@ -27,7 +48,8 @@ const PaymentResult = () => {
       message: message || (resultCode === '0' ? 'Giao dịch thành công' : 'Giao dịch thất bại'),
       amount,
       transId,
-      time: responseTime
+      time: responseTime,
+      method: 'MOMO'
     });
   }, [location]);
 
@@ -39,6 +61,7 @@ const PaymentResult = () => {
   );
 
   const formatCurrency = (amount) => {
+    if (!amount) return '0 ₫';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -47,8 +70,16 @@ const PaymentResult = () => {
 
   const formatTime = (timeStr) => {
     if (!timeStr) return new Date().toLocaleString('vi-VN');
-    // MoMo time format: YYYY-MM-DD HH:mm:ss
     return timeStr;
+  };
+
+  const getMethodLabel = (method) => {
+    switch (method) {
+      case 'MOMO': return 'Ví MoMo';
+      case 'CASH': return 'Tiền mặt';
+      case 'BANK_TRANSFER': return 'Chuyển khoản';
+      default: return method || 'Tiền mặt';
+    }
   };
 
   return (
@@ -93,7 +124,7 @@ const PaymentResult = () => {
             </div>
             {result.transId && (
               <div className={styles.detailRow}>
-                <span>Mã giao dịch MoMo</span>
+                <span>Mã giao dịch</span>
                 <span className={styles.bold}>{result.transId}</span>
               </div>
             )}
@@ -107,7 +138,9 @@ const PaymentResult = () => {
             </div>
             <div className={styles.detailRow}>
               <span>Phương thức</span>
-              <span className={styles.momoText}>Ví MoMo</span>
+              <span className={result.method === 'MOMO' ? styles.momoText : styles.bold}>
+                {getMethodLabel(result.method)}
+              </span>
             </div>
           </div>
         </div>

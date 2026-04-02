@@ -110,9 +110,7 @@ export const useAuthForm = (formType = 'login') => {
 
       if (result.success) {
         if (result.requireLogin) {
-          // Registration successful but needs to login manually
           setGeneralError(result.message || 'Đăng ký thành công! Vui lòng đăng nhập.');
-          // Switch to login tab after 2 seconds
           setTimeout(() => {
             navigate('/auth'); // Or switch tab if on same page
           }, 2000);

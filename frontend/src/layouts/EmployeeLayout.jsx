@@ -27,10 +27,10 @@ const EmployeeLayout = () => {
   }, []);
 
   const handleLogout = async () => {
-    if (window.confirm('Bạn có chắc muốn đăng xuất?')) {
+    showConfirm('Bạn có chắc muốn đăng xuất?', async () => {
       await logout();
       navigate('/admin/login');
-    }
+    }, null, 'Xác nhận');
   };
 
   // Navigation items cho nhân viên
@@ -41,6 +41,13 @@ const EmployeeLayout = () => {
       label: 'Đơn hàng',
       shortLabel: 'Đơn',
       description: 'Cập nhật món ăn'
+    },
+    {
+      path: '/employee/tables',
+      icon: 'fa-table',
+      label: 'Quản lý bàn',
+      shortLabel: 'Bàn',
+      description: 'Cập nhật trạng thái bàn'
     },
     {
       path: '/employee/notifications',
@@ -62,13 +69,6 @@ const EmployeeLayout = () => {
       label: 'Tin nhắn',
       shortLabel: 'Inbox',
       description: 'Hỗ trợ khách hàng'
-    },
-    {
-      path: '/employee/tables',
-      icon: 'fa-table',
-      label: 'Quản lý bàn',
-      shortLabel: 'Bàn',
-      description: 'Cập nhật trạng thái bàn'
     }
   ];
 

@@ -25,25 +25,21 @@ const Orders = () => {
 
     console.log(`[Orders] Subscribing to updates for invoice ${invoice.id}`);
     
-    // Subscribe to status updates
     const unsubscribeStatus = webSocketService.subscribe('/topic/orders/status', (message) => {
       console.log('[Status Orders] Received WebSocket update:', message);
       
-      // Nếu message liên quan đến invoice hiện tại của khách hàng
-      if (message.orderId === invoice.id) {
+      if (message.invoiceId === invoice.id) {
         showToast('Trạng thái món ăn đã được cập nhật!', 'info');
-        refetch(); // Reload data
+        refetch();
       }
     });
 
-    // Subscribe to new orders
     const unsubscribeOrders = webSocketService.subscribe('/topic/orders', (message) => {
       console.log('[New Orders] Received WebSocket new:', message);
 
-      //Nếu message liên quan đến invoice hiện tại của khách hàng
       if(message.orderId == invoice.id){
         showToast('Đơn hàng mới đã được cập nhật!', 'info');
-        refetch(); // Reload data
+        refetch();
       }
     })
 

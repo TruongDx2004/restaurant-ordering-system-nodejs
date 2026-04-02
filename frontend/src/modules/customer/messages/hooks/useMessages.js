@@ -1,37 +1,29 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { messageApi } from '../../../../api';
 import { webSocketService } from '../../../../services/webSocketService';
 
 /**
  * Custom hook for customer messaging
- * Unified with Staff view using tableId as primary identifier
+ * Tối ưu hóa việc lấy dữ liệu và đồng nhất với logic WebSocket mới
  */
 export const useMessages = (tableId, invoiceId) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sending, setSending] = useState(false);
+  const tableIdRef = useRef(tableId);
 
   /**
-   * Fetch messages based on tableId
+   * Lấy lịch sử tin nhắn của bàn
    */
   const fetchMessages = useCallback(async () => {
     if (!tableId) return;
 
     try {
-      const response = await messageApi.getByTableOrdered(tableId);
+      const response = await messageApi.getByTable(tableId);
       
       if (response && response.success) {
-        // Sort by date ASC to ensure newest at bottom
-        const sorted = (response.data || []).sort((a, b) => 
-          new Date(a.createdAt) - new Date(b.createdAt)
-        );
-        setMessages(sorted);
-      } else if (Array.isArray(response)) {
-        const sorted = response.sort((a, b) => 
-          new Date(a.createdAt) - new Date(b.createdAt)
-        );
-        setMessages(sorted);
+        setMessages(response.data || []);
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
@@ -41,28 +33,30 @@ export const useMessages = (tableId, invoiceId) => {
     }
   }, [tableId]);
 
-  // Initial fetch
+  useEffect(() => {
+    tableIdRef.current = tableId;
+  }, [tableId]);
+
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
 
-  // WebSocket for real-time messages
   useEffect(() => {
     if (!tableId) return;
 
     console.log(`[Socket] Subscribing to chat for table ${tableId}`);
+    
     const unsubscribe = webSocketService.subscribe(`/topic/chat/${tableId}`, (message) => {
-      console.log('[Socket] New chat message received:', message);
-      // Instead of refetching all, we can append if we have enough info, 
-      // but fetchMessages is safer for consistency with the DB
-      fetchMessages();
+      if (message.tableId === tableIdRef.current || message.tableId == tableIdRef.current) {
+        fetchMessages();
+      }
     });
 
     return () => unsubscribe();
-  }, [tableId, fetchMessages]);
+  }, [tableId]);
 
   /**
-   * Send a new message
+   * Gửi tin nhắn mới
    */
   const sendMessage = async (content, type = 'TEXT') => {
     if (!content.trim() && type === 'TEXT') return { success: false };
@@ -80,15 +74,13 @@ export const useMessages = (tableId, invoiceId) => {
 
       const response = await messageApi.create(messageData);
       
-      if (response && response.success && response.data) {
+      if (response && response.success) {
+        // Thêm tin nhắn vào danh sách cục bộ để hiển thị ngay
         setMessages(prev => [...prev, response.data]);
-        return { success: true };
-      } else if (response && response.id) {
-        setMessages(prev => [...prev, response]);
         return { success: true };
       }
       
-      return { success: false, error: 'Phản hồi không hợp lệ' };
+      return { success: false, error: 'Gửi tin nhắn thất bại' };
     } catch (err) {
       console.error('Error sending message:', err);
       return { success: false, error: 'Gửi tin nhắn thất bại' };

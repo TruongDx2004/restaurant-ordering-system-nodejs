@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { invoiceApi, invoiceItemApi, tableApi } from '../../../api';
+import { useModal } from '../../../contexts/ModalContext';
 import { webSocketService } from '../../../services/webSocketService';
 import styles from './index.module.css';
 
@@ -8,6 +9,7 @@ import styles from './index.module.css';
  * Mapping with backend InvoiceItemStatus: WAITING, PREPARING, SERVED, CANCELLED
  */
 const OrderProcessing = () => {
+  const { showAlert } = useModal();
   const [orders, setOrders] = useState([]);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,16 +21,13 @@ const OrderProcessing = () => {
   useEffect(() => {
     console.log('[Employee Orders] Subscribing to real-time updates...');
     
-    // 1. Subscribe to NEW_ORDER
     const unsubscribeNewOrders = webSocketService.subscribe('/topic/orders', (message) => {
       console.log('[Employee Orders] New order notification:', message);
-      fetchData(); // Reload all data when a new order comes in
+      fetchData(); 
     });
 
-    // 2. Subscribe to ITEM_STATUS_UPDATE
     const unsubscribeStatusUpdates = webSocketService.subscribe('/topic/orders/status', (message) => {
       console.log('[Employee Orders] Status update received:', message);
-      // We could selectively update the state, but fetchData() is safer and simpler for now
       fetchData();
     });
 
@@ -38,7 +37,7 @@ const OrderProcessing = () => {
     };
   }, []);
 
-  // Tab definitions mapping to backend InvoiceItemStatus
+
   const TABS = [
     { id: 'WAITING', label: 'Đang chờ', icon: 'fa-clock', color: '#f39c12' },
     { id: 'PREPARING', label: 'Đang làm', icon: 'fa-fire', color: '#e74c3c' },
@@ -123,7 +122,7 @@ const OrderProcessing = () => {
         );
       }
     } catch (err) {
-      alert('Lỗi: ' + (err.message || 'Không thể cập nhật'));
+      showAlert('Lỗi: ' + (err.message || 'Không thể cập nhật'), 'Lỗi', 'error');
     }
   };
 
@@ -241,9 +240,9 @@ const OrderProcessing = () => {
                         <div className={styles.itemName}>
                           <strong>{item.quantity}x</strong> {item.dish?.name || 'Món ăn'}
                         </div>
-                        {item.notes && (
+                        {item.note && (
                           <div className={styles.itemNote}>
-                            <i className="fas fa-comment-dots"></i> {item.notes}
+                            <i className="fas fa-comment-dots"></i> {item.note}
                           </div>
                         )}
                       </div>

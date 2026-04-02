@@ -5,6 +5,7 @@ import { SearchProvider } from './contexts/SearchContext';
 import { CategoryProvider } from './contexts/CategoryContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { webSocketService } from './services/webSocketService';
+import { ModalProvider } from './contexts/ModalContext';
 import { AuthPage } from './modules/customer/auth';
 import CustomerLayout from './layouts/CustomerLayout';
 import CustomerHome from './modules/customer/home';
@@ -41,11 +42,12 @@ function App() {
   }, []);
 
   return (
-    <AdminAuthProvider>
-      <AuthProvider>
-        <SearchProvider>
-          <CategoryProvider>
-            <BrowserRouter>
+    <ModalProvider>
+      <AdminAuthProvider>
+        <AuthProvider>
+          <SearchProvider>
+            <CategoryProvider>
+              <BrowserRouter>
               <Routes>
                 {/* ==================== ADMIN ROUTES ==================== */}
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -182,7 +184,7 @@ function App() {
         </SearchProvider>
       </AuthProvider>
     </AdminAuthProvider>
-  );
-}
-
+    </ModalProvider>
+    );
+    }
 export default App;

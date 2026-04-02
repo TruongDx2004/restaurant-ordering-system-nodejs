@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { messageApi, tableApi, invoiceApi, paymentApi } from '../../../../api';
+import { messageApi, invoiceApi, paymentApi } from '../../../../api';
 import { webSocketService } from '../../../../services/webSocketService';
 
 /**
  * Custom hook for employee inbox management
+ * Tối ưu hóa việc lấy dữ liệu hội thoại kèm lastMessage
  */
 export const useEmployeeInbox = () => {
   const [conversations, setConversations] = useState([]);
@@ -16,25 +17,14 @@ export const useEmployeeInbox = () => {
   const activeTableRef = useRef(activeTable);
 
   /**
-   * Fetch all tables that have messages or are active
+   * Lấy danh sách hội thoại kèm tin nhắn cuối cùng (lastMessage)
    */
   const fetchConversations = useCallback(async () => {
     try {
-      const tablesResponse = await tableApi.getAllTables();
-      if (!tablesResponse.success) return;
-
-      const tables = tablesResponse.data || [];
-      
-      const conversationsData = tables.map(table => ({
-        id: table.id,
-        tableNumber: table.tableNumber,
-        status: table.status,
-        lastMessage: 'Xem chi tiết hội thoại',
-        unreadCount: 0,
-        type: 'NORMAL'
-      }));
-
-      setConversations(conversationsData);
+      const response = await messageApi.getConversations();
+      if (response.success) {
+        setConversations(response.data || []);
+      }
     } catch (err) {
       console.error('Error fetching conversations:', err);
       setError('Không thể tải danh sách hội thoại');
@@ -44,20 +34,17 @@ export const useEmployeeInbox = () => {
   }, []);
 
   /**
-   * Fetch messages for a specific table
+   * Lấy lịch sử tin nhắn của một bàn cụ thể
    */
   const fetchMessages = useCallback(async (tableId) => {
     if (!tableId) return;
 
     setLoading(prev => ({ ...prev, chat: true }));
     try {
-      const response = await messageApi.getByTableOrdered(tableId);
+      const response = await messageApi.getByTable(tableId);
       if (response.success) {
-        // Ensure newest messages are at the bottom (Sort by date ASC)
-        const sortedMessages = (response.data || []).sort((a, b) =>
-          new Date(a.createdAt) - new Date(b.createdAt)
-        );
-        setMessages(sortedMessages);
+        // API Backend đã sắp xếp theo thời gian ASC
+        setMessages(response.data || []);
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
@@ -67,49 +54,48 @@ export const useEmployeeInbox = () => {
     }
   }, []);
 
-  // Keep ref updated for WebSocket callbacks
+  // Cập nhật ref để dùng trong WebSocket
   useEffect(() => {
     activeTableRef.current = activeTable;
   }, [activeTable]);
 
-  // WebSocket subscription messages
+  // Đăng ký nhận tin nhắn mới qua WebSocket
   useEffect(() => {
-    console.log('[WebSocket] Subscribing to chat updates for employee inbox');
     const unsubscribe = webSocketService.subscribe('/topic/employee/chat', (message) => {
-
       const currentTable = activeTableRef.current;
+
+      // Nếu đang mở chat của bàn này thì tải lại tin nhắn
       if (message.tableId === currentTable?.id || message.tableId == currentTable?.id) {
         fetchMessages(currentTable.id);
-      } else {
-        setConversations(prev => prev.map(conv => {
-          if (conv.id === message.tableId || conv.id == message.tableId) {
-            return {
-              ...conv,
-              lastMessage: message.content,
-              unreadCount: conv.unreadCount + 1
-            };
-          }
-          return conv;
-        }));
       }
+
+      // Luôn cập nhật lastMessage trong danh sách hội thoại
+      setConversations(prev => prev.map(conv => {
+        if (conv.id === message.tableId || conv.id == message.tableId) {
+          return {
+            ...conv,
+            sender: message.sender,
+            lastMessage: message.content,
+            unreadCount: (message.tableId === currentTable?.id) ? 0 : (conv.unreadCount + 1)
+          };
+        }
+        return conv;
+      }));
     });
-    return () => {
-      unsubscribe();
-    };
+
+    return () => unsubscribe();
   }, [fetchMessages]);
 
-
-  // Initial fetch only - removed intervals as requested
+  // Tải danh sách lần đầu
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
 
-  // Fetch messages and active invoice when active table changes
+  // Tải tin nhắn và invoiceId khi chọn bàn
   useEffect(() => {
     if (activeTable) {
       fetchMessages(activeTable.id);
 
-      // Fetch current active invoice to link staff messages
       const getActiveInvoice = async () => {
         try {
           const response = await invoiceApi.getActiveInvoice(activeTable.id);
@@ -119,7 +105,6 @@ export const useEmployeeInbox = () => {
             setActiveInvoiceId(null);
           }
         } catch (err) {
-          console.error('Error getting active invoice:', err);
           setActiveInvoiceId(null);
         }
       };
@@ -129,29 +114,16 @@ export const useEmployeeInbox = () => {
     }
   }, [activeTable, fetchMessages]);
 
-  /*
-    Update unread count when active table changes - reset to 0 for the selected conversation
-  */
   const markAsRead = (tableId) => {
     setConversations(prev =>
-      prev.map(c =>
-        c.id === tableId
-          ? { ...c, unreadCount: 0 }
-          : c
-      )
+      prev.map(c => c.id === tableId ? { ...c, unreadCount: 0 } : c)
     );
   };
 
-  /**
-   * Refresh current chat
-   */
   const refreshChat = useCallback(() => {
     if (activeTable) fetchMessages(activeTable.id);
   }, [activeTable, fetchMessages]);
 
-  /**
-   * Send message to a table
-   */
   const sendMessage = async (content, type = 'TEXT') => {
     if (!content.trim() || !activeTable || sending) return;
 
@@ -159,7 +131,7 @@ export const useEmployeeInbox = () => {
     try {
       const messageData = {
         tableId: activeTable.id,
-        invoiceId: activeInvoiceId, // Include active invoice ID so customers see the reply
+        invoiceId: activeInvoiceId,
         content: content,
         messageType: type,
         sender: 'STAFF'
@@ -167,60 +139,52 @@ export const useEmployeeInbox = () => {
 
       const response = await messageApi.create(messageData);
 
-      // Handle ApiResponse structure { success, data, message }
-      if (response && response.success && response.data) {
+      if (response && response.success) {
         setMessages(prev => [...prev, response.data]);
-        return { success: true };
-      } else if (response && response.id) {
-        // Fallback if interceptor returns data directly
-        setMessages(prev => [...prev, response]);
-        return { success: true };
-      }
 
+        // Cập nhật ngay lastMessage cho chính mình và senderTag
+        setConversations(prev => prev.map(c =>
+          c.id === activeTable.id ? { ...c, lastMessage: response.data.content, sender: 'STAFF' } : c
+        )); 
+
+        return { success: true };
+        }
       return { success: false, error: 'Phản hồi không hợp lệ' };
-    } catch (err) {
-      console.error('Error sending message:', err);
-      return { success: false, error: 'Gửi thất bại' };
-    } finally {
-      setSending(false);
-    }
-  };
-
-  /**
-   * Confirm cash payment for an invoice
-   */
-  const confirmPayment = async (invoiceId) => {
-    try {
-      const response = await paymentApi.confirmByInvoice(invoiceId);
-      if (response.success) {
-        // Gửi tin nhắn tự động thông báo đã nhận tiền
-        await sendMessage('Nhân viên đã xác nhận thanh toán tiền mặt. Cảm ơn quý khách!', 'SYSTEM');
-        
-        // Refresh messages and table status
-        refreshChat();
-        fetchConversations();
-        
-        return { success: true };
+      } catch (err) {
+        console.error('Error sending message:', err);
+        return { success: false, error: 'Gửi thất bại' };
+      } finally {
+        setSending(false);
       }
-      return { success: false, error: response.message };
-    } catch (err) {
-      console.error('Error confirming payment:', err);
-      return { success: false, error: err.message };
-    }
-  };
+    };
 
-  return {
-    conversations,
-    activeTable,
-    setActiveTable,
-    messages,
-    loading,
-    error,
-    sending,
-    sendMessage,
-    confirmPayment,
-    markAsRead,
-    refreshList: fetchConversations,
-    refreshChat
+    const confirmPayment = async (invoiceId) => {
+      try {
+        const response = await paymentApi.confirmByInvoice(invoiceId);
+        if (response.success) {
+          await sendMessage('Nhân viên đã xác nhận thanh toán tiền mặt. Cảm ơn quý khách!', 'SYSTEM');
+          refreshChat();
+          fetchConversations();
+          return { success: true };
+        }
+        return { success: false, error: response.message };
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
+    };
+
+    return {
+      conversations,
+      activeTable,
+      setActiveTable,
+      messages,
+      loading,
+      error,
+      sending,
+      sendMessage,
+      confirmPayment,
+      markAsRead,
+      refreshList: fetchConversations,
+      refreshChat
+    };
   };
-};

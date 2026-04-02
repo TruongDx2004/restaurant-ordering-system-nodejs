@@ -20,6 +20,23 @@ export const CustomerHome = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [dishesByCategory, setDishesByCategory] = useState({});
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Listen for toast events from children (DishCard)
+  useEffect(() => {
+    const handleShowToast = (e) => {
+      if (e.detail) {
+        showToast(e.detail.message, e.detail.type);
+      }
+    };
+    window.addEventListener('customer:showToast', handleShowToast);
+    return () => window.removeEventListener('customer:showToast', handleShowToast);
+  }, []);
 
   // Get global contexts
   const { searchQuery } = useSearchContext();
@@ -166,6 +183,13 @@ export const CustomerHome = () => {
         {/* Footer */}
         <Footer />
       </main>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}>
+          {toast.message}
+        </div>
+      )}
     </div>
     </>
   );

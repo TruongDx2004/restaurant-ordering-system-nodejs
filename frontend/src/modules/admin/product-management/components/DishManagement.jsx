@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { dishApi, categoryApi, excelApi } from '../../../../api';
 import { DishModal } from './DishModal';
+import { useModal } from '../../../../contexts/ModalContext';
 import styles from './DishManagement.module.css';
 
 /**
@@ -8,7 +9,9 @@ import styles from './DishManagement.module.css';
  * CRUD operations for dishes
  */
 export const DishManagement = () => {
+  const { showAlert, showConfirm } = useModal();
   const [dishes, setDishes] = useState([]);
+
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,7 +39,7 @@ export const DishManagement = () => {
         dishApi.getAll(),
         categoryApi.getAll()
       ]);
-      
+
       if (dishesRes.success) {
         setDishes(dishesRes.data);
       }
@@ -53,7 +56,7 @@ export const DishManagement = () => {
   // Filter dishes
   const filteredDishes = dishes.filter(dish => {
     const matchesSearch = dish.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         dish.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      dish.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || dish.category?.id === parseInt(filterCategory);
     const matchesStatus = filterStatus === 'all' || dish.status === filterStatus;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -86,17 +89,17 @@ export const DishManagement = () => {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa món ăn này?')) return;
-
-    try {
-      const response = await dishApi.deleteDish(id);
-      if (response.success) {
-        await loadData();
-        alert('Xóa món ăn thành công!');
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || 'Không thể xóa món ăn');
-    }
+    showConfirm('Bạn có chắc muốn xóa món ăn này?',  async () => {
+      try {
+        const response = await dishApi.deleteDish(id);
+        if (response.success) {
+          await loadData();
+          showAlert('Xóa món ăn thành công!', 'Thành công', 'success');
+        }
+      } catch (err) {
+        showAlert(err.response?.data?.message || 'Không thể xóa món ăn', 'Lỗi', 'error');
+      };
+    }, null, 'Xác nhận');
   };
 
   // Handle save
@@ -107,14 +110,14 @@ export const DishManagement = () => {
         if (response.success) {
           await loadData();
           setShowModal(false);
-          alert('Cập nhật món ăn thành công!');
+          showAlert('Cập nhật món ăn thành công!', 'Thành công', 'success');
         }
       } else {
         const response = await dishApi.createDish(dishData);
         if (response.success) {
           await loadData();
           setShowModal(false);
-          alert('Tạo món ăn thành công!');
+          showAlert('Tạo món ăn thành công!', 'Thành công', 'success');
         }
       }
     } catch (err) {
@@ -130,7 +133,7 @@ export const DishManagement = () => {
         await loadData();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Không thể cập nhật trạng thái');
+      showAlert(err.response?.data?.message || 'Không thể cập nhật trạng thái', 'Lỗi', 'error');
     }
   };
 
@@ -138,7 +141,7 @@ export const DishManagement = () => {
     try {
       setIsExcelLoading(true);
       const response = await excelApi.exportData('dish'); // 'dish' là tên entity
-      
+
       const blob = new Blob([response.data || response], { type: 'application/vnd.ms-excel' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -149,7 +152,7 @@ export const DishManagement = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Lỗi khi tải xuống file Excel!');
+      showAlert('Lỗi khi tải xuống file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
@@ -167,10 +170,10 @@ export const DishManagement = () => {
     try {
       setIsExcelLoading(true);
       await excelApi.importData('dish', file); // 'dish' là tên entity
-      alert('Import dữ liệu món ăn thành công!');
+      showAlert('Import dữ liệu món ăn thành công!', 'Thành công', 'success');
       await loadData(); // Tải lại bảng dữ liệu sau khi import
     } catch (err) {
-      alert(err.response?.data || 'Lỗi khi import file Excel!');
+      showAlert(err.response?.data || 'Lỗi khi import file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
@@ -227,15 +230,15 @@ export const DishManagement = () => {
         </div>
 
         <div className={styles.actionGroup}>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept=".xlsx, .xls" 
-            style={{ display: 'none' }} 
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls"
+            style={{ display: 'none' }}
           />
 
-          <button 
+          <button
             className={styles.exportBtn}
             onClick={handleExportExcel}
             disabled={isExcelLoading}
@@ -244,7 +247,7 @@ export const DishManagement = () => {
             Export
           </button>
 
-          <button 
+          <button
             className={styles.importBtn}
             onClick={handleImportClick}
             disabled={isExcelLoading}

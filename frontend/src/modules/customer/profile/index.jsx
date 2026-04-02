@@ -20,9 +20,9 @@ export const ProfilePage = () => {
     const loadData = () => {
       const savedTableNumber = localStorage.getItem('tableNumber');
       const savedLoginTime = localStorage.getItem('loginTime');
-      
+
       setTableNumber(savedTableNumber || 'Chưa chọn bàn');
-      
+
       if (savedLoginTime) {
         const date = new Date(savedLoginTime);
         setLoginTime(date.toLocaleString('vi-VN'));
@@ -32,11 +32,11 @@ export const ProfilePage = () => {
         localStorage.setItem('loginTime', now.toISOString());
         setLoginTime(now.toLocaleString('vi-VN'));
       }
-      
+
       // Simulate loading
       setTimeout(() => setIsLoading(false), 300);
     };
-    
+
     loadData();
   }, []);
 
@@ -98,129 +98,130 @@ export const ProfilePage = () => {
     <>
       <DesktopWarning />
       <div className={styles.container}>
-      {/* Logout Button */}
-      <button className={styles.logoutBtn} onClick={handleLogout} title="Đăng xuất">
-        <i className="fas fa-sign-out-alt"></i>
-        <span>Đăng xuất</span>
-      </button>
+        {/* Logout Button */}
+        <button className={styles.logoutBtn} onClick={handleLogout} title="Đăng xuất">
+          <i className="fas fa-sign-out-alt"></i>
+          <span>Đăng xuất</span>
+        </button>
 
-      {/* Header Profile Card (30%) */}
-      <div className={styles.headerCard}>
-        <div className={styles.avatarSection}>
-          <div className={styles.avatar}>
-            <i className="fas fa-user"></i>
-          </div>
-          <div className={styles.userInfo}>
-            <h2 className={styles.phoneNumber}>{user?.phone || 'Khách vãng lai'}</h2>
-            <span className={styles.statusBadge}>
-              <i className="fas fa-circle"></i>
-              Đang hoạt động
-            </span>
-          </div>
-        </div>
-        
-        <div className={styles.quickInfo}>
-          <div className={styles.tableChip}>
-            <i className="fas fa-chair"></i>
-            Bàn số {tableNumber}
-          </div>
-          <div className={styles.loginTime}>
-            <i className="fas fa-clock"></i>
-            Đăng nhập: {loginTime}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content (70%) */}
-      <div className={styles.mainContent}>
-        {/* Account Information Card */}
-        <div className={styles.accountCard}>
-          <h3 className={styles.sectionTitle}>Thông tin tài khoản</h3>
-          
-          <div className={styles.infoList}>
-            <div className={styles.infoRow}>
-              <div className={styles.infoIcon}>
-                <i className="fas fa-phone"></i>
-              </div>
-              <div className={styles.infoText}>
-                <span className={styles.label}>Số điện thoại</span>
-                <span className={styles.value}>{user?.phone || 'Chưa có'}</span>
-              </div>
+        {/* Header Profile Card (30%) */}
+        <div className={styles.headerCard}>
+          <div className={styles.avatarSection}>
+            <div className={styles.avatar}>
+              <i className="fas fa-user"></i>
             </div>
-
-            <div className={styles.infoRow}>
-              <div className={styles.infoIcon}>
-                <i className="fas fa-chair"></i>
-              </div>
-              <div className={styles.infoText}>
-                <span className={styles.label}>Bàn đang sử dụng</span>
-                <span className={styles.value}>Bàn số {tableNumber}</span>
-              </div>
+            <div className={styles.userInfo}>
+              <h2 className={styles.phoneNumber}>{user?.phone || 'Khách vãng lai'}</h2>
+              <span className={styles.statusBadge}>
+                <i className="fas fa-circle"></i>
+                Đang hoạt động
+              </span>
             </div>
+          </div>
 
-            <div className={styles.infoRow}>
-              <div className={styles.infoIcon}>
-                <i className="fas fa-clock"></i>
-              </div>
-              <div className={styles.infoText}>
-                <span className={styles.label}>Thời gian đăng nhập</span>
-                <span className={styles.value}>{loginTime}</span>
-              </div>
+          <div className={styles.quickInfo}>
+            <div className={styles.tableChip}>
+              <i className="fas fa-chair"></i>
+              Bàn số {tableNumber}
             </div>
-
-            <div className={styles.infoRow}>
-              <div className={styles.infoIcon}>
-                <i className="fas fa-check-circle"></i>
-              </div>
-              <div className={styles.infoText}>
-                <span className={styles.label}>Trạng thái</span>
-                <span className={`${styles.value} ${styles.verified}`}>
-                  <i className="fas fa-shield-alt"></i>
-                  Đã xác thực
-                </span>
-              </div>
+            <div className={styles.loginTime}>
+              <i className="fas fa-clock"></i>
+              Đăng nhập: {loginTime}
             </div>
           </div>
         </div>
 
-        {/* Future Features Grid */}
-        <div className={styles.featuresSection}>
-          <h3 className={styles.sectionTitle}>Tính năng</h3>
-          
-          <div className={styles.featuresGrid}>
-            {featureCards.map((feature, index) => (
-              <div 
-                key={index}
-                className={`${styles.featureCard} ${feature.disabled ? styles.disabled : ''}`}
-                title={feature.disabled ? 'Tính năng sắp ra mắt' : feature.title}
-              >
-                <div className={styles.featureIcon}>
-                  <i className={`fas ${feature.icon}`}></i>
+        {/* Main Content (70%) */}
+        <div className={styles.mainContent}>
+          {/* Account Information Card */}
+          <div className={styles.accountCard}>
+            <h3 className={styles.sectionTitle}>Thông tin tài khoản</h3>
+
+            <div className={styles.infoList}>
+              <div className={styles.infoRow}>
+                <div className={styles.infoIcon}>
+                  <i className="fas fa-phone"></i>
                 </div>
-                <div className={styles.featureContent}>
-                  <h4 className={styles.featureTitle}>{feature.title}</h4>
-                  <p className={styles.featureDesc}>{feature.description}</p>
-                  
-                  {feature.badge && (
-                    <span className={styles.comingSoonBadge}>{feature.badge}</span>
-                  )}
-                  
-                  {feature.points !== undefined && (
-                    <div className={styles.pointsSection}>
-                      <span className={styles.points}>{feature.points} điểm</span>
-                      <div className={styles.progressBar}>
-                        <div className={styles.progress} style={{ width: '0%' }}></div>
-                      </div>
+                <div className={styles.infoText}>
+                  <span className={styles.label}>Số điện thoại</span>
+                  <span className={styles.value}>{user?.phone || 'Chưa có'}</span>
+                </div>
+              </div>
+
+              <div className={styles.infoRow}>
+                <div className={styles.infoIcon}>
+                  <i className="fas fa-chair"></i>
+                </div>
+                <div className={styles.infoText}>
+                  <span className={styles.label}>Bàn đang sử dụng</span>
+                  <span className={styles.value}>Bàn số {tableNumber}</span>
+                </div>
+              </div>
+
+              <div className={styles.infoRow}>
+                <div className={styles.infoIcon}>
+                  <i className="fas fa-clock"></i>
+                </div>
+                <div className={styles.infoText}>
+                  <span className={styles.label}>Thời gian đăng nhập</span>
+                  <span className={styles.value}>{loginTime}</span>
+                </div>
+              </div>
+
+              <div className={styles.infoRow}>
+                <div className={styles.infoIcon}>
+                  <i className="fas fa-check-circle"></i>
+                </div>
+                <div className={styles.infoText}>
+                  <span className={styles.label}>Trạng thái</span>
+                  <span className={`${styles.value} ${styles.verified}`}>
+                    <i className="fas fa-shield-alt"></i>
+                    Đã xác thực
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Future Features Grid */}
+          {0 && (
+            <div className={styles.featuresSection}>
+              <h3 className={styles.sectionTitle}>Tính năng</h3>
+
+              <div className={styles.featuresGrid}>
+                {featureCards.map((feature, index) => (
+                  <div
+                    key={index}
+                    className={`${styles.featureCard} ${feature.disabled ? styles.disabled : ''}`}
+                    title={feature.disabled ? 'Tính năng sắp ra mắt' : feature.title}
+                  >
+                    <div className={styles.featureIcon}>
+                      <i className={`fas ${feature.icon}`}></i>
                     </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                    <div className={styles.featureContent}>
+                      <h4 className={styles.featureTitle}>{feature.title}</h4>
+                      <p className={styles.featureDesc}>{feature.description}</p>
 
+                      {feature.badge && (
+                        <span className={styles.comingSoonBadge}>{feature.badge}</span>
+                      )}
+
+                      {feature.points !== undefined && (
+                        <div className={styles.pointsSection}>
+                          <span className={styles.points}>{feature.points} điểm</span>
+                          <div className={styles.progressBar}>
+                            <div className={styles.progress} style={{ width: '0%' }}></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 };
