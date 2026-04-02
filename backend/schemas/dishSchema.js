@@ -33,11 +33,24 @@ const Dish = sequelize.define(
       type: DataTypes.BIGINT,
       allowNull: false,
       field: "category_id"
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      field: "created_at"
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: "updated_at"
+    },
+    deletedAt: {
+      type: DataTypes.DATE,
+      field: "deleted_at"
     }
   },
   {
     tableName: "dishes",
-    timestamps: false
+    timestamps: true,
+    paranoid: true,
   }
 );
 

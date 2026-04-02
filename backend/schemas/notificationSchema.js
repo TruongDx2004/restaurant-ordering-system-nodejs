@@ -21,7 +21,7 @@ const Notification = sequelize.define(
     },
 
     type: {
-      type: DataTypes.STRING, // Ví dụ: CASH_PAYMENT_REQUEST, NEW_ORDER, etc.
+      type: DataTypes.STRING,
       allowNull: false
     },
 
@@ -44,19 +44,29 @@ const Notification = sequelize.define(
     },
 
     data: {
-      type: DataTypes.JSON, // Lưu metadata như invoiceId, tableId
+      type: DataTypes.JSON,
       allowNull: true
     },
 
     createdAt: {
       type: DataTypes.DATE,
-      field: "created_at",
-      defaultValue: DataTypes.NOW
+      field: "created_at"
+    },
+
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: "updated_at"
+    },
+
+    deletedAt: {
+      type: DataTypes.DATE,
+      field: "deleted_at"
     }
   },
   {
     tableName: "notifications",
-    timestamps: false
+    timestamps: true, 
+    paranoid: true,
   }
 );
 

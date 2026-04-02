@@ -4,6 +4,7 @@ const Category = require("./categorySchema");
 const Dish = require("./dishSchema");
 const Invoice = require("./invoiceSchema");
 const InvoiceItem = require("./invoiceItemSchema");
+const Message = require("./messageSchema");
 
 // ===== ASSOCIATIONS =====
 
@@ -46,11 +47,22 @@ Dish.hasMany(InvoiceItem, {
   as: "invoiceItems"
 });
 
+// Table - Message
+Table.hasMany(Message, {
+  foreignKey: "tableId",
+  as: "messages"
+});
+Message.belongsTo(Table, {
+  foreignKey: "tableId",
+  as: "table"
+});
+
 module.exports = {
   User,
   Table,
   Category,
   Dish,
   Invoice,
-  InvoiceItem
+  InvoiceItem,
+  Message
 };
