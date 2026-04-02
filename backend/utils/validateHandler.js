@@ -1,20 +1,19 @@
 const { body, param, query, validationResult } = require("express-validator");
+const responseHandler = require("./responseHandler");
 
 const validate = (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        return res.status(400).json({
-            success: false,
-            errors: errors.array().map(err => ({
-                field: err.path,
-                message: err.msg
-            }))
-        });
+        // gộp message lại cho gọn
+        const message = errors.array().map(err => `${err.msg}`).join(", ");
+        return responseHandler.error(res, message, 400);
     }
 
     next();
 };
+
+module.exports = validate;
 
 const categoryValidator = {
     create: [
@@ -63,9 +62,9 @@ const customerValidator = {
             .isLength({ min: 2 }).withMessage("Họ tên phải ít nhất 2 ký tự"),
 
         body("phone")
-            .trim()
-            .notEmpty().withMessage("Số điện thoại không được để trống")
-            .matches(/^(0|\+84)[0-9]{9}$/).withMessage("Số điện thoại không hợp lệ"),
+            .optional()
+            .isMobilePhone("vi-VN", { strictMode: false })
+            .withMessage("Số điện thoại không hợp lệ"),
 
         body("password")
             .notEmpty().withMessage("Mật khẩu không được để trống")
@@ -80,8 +79,9 @@ const customerValidator = {
 
     login: [
         body("phone")
-            .trim()
-            .notEmpty().withMessage("Số điện thoại không được để trống"),
+            .optional()
+            .isMobilePhone("vi-VN", { strictMode: false })
+            .withMessage("Số điện thoại không hợp lệ"),
 
         body("password")
             .notEmpty().withMessage("Mật khẩu không được để trống")
@@ -436,11 +436,8 @@ const messageValidator = {
             .optional()
             .customSanitizer(v => v.toUpperCase().trim())
             .isIn(["TEXT", "ORDER", "NOTIFICATION"])
-            .withMessage("Loại message không hợp lệ"),
-
-        body("invoiceId")
-            .optional()
-            .isInt().withMessage("invoiceId phải là số")
+            .withMessage("Loại message không hợp lệ")
+            
     ],
 
     update: [
@@ -877,9 +874,9 @@ const userValidator = {
             .isString().withMessage("Tên phải là chuỗi"),
 
         body("phone")
-            .notEmpty().withMessage("Số điện thoại không được để trống")
-            .bail()
-            .isMobilePhone("vi-VN").withMessage("Số điện thoại không hợp lệ"),
+            .optional()
+            .isMobilePhone("vi-VN", { strictMode: false })
+            .withMessage("Số điện thoại không hợp lệ"),
 
         body("role")
             .notEmpty().withMessage("Role không được để trống")
@@ -912,7 +909,8 @@ const userValidator = {
 
         body("phone")
             .optional()
-            .isMobilePhone("vi-VN").withMessage("Số điện thoại không hợp lệ"),
+            .isMobilePhone("vi-VN", { strictMode: false })
+            .withMessage("Số điện thoại không hợp lệ"),
 
         body("role")
             .optional()
@@ -951,9 +949,9 @@ const authValidator = {
             .isString().withMessage("Tên phải là chuỗi"),
 
         body("phone")
-            .notEmpty().withMessage("SĐT không được để trống")
-            .bail()
-            .isMobilePhone("vi-VN").withMessage("SĐT không hợp lệ")
+            .optional()
+            .isMobilePhone("vi-VN", { strictMode: false })
+            .withMessage("Số điện thoại không hợp lệ"),
     ],
 
     login: [
