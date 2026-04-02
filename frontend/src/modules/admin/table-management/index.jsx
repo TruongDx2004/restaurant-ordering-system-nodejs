@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { tableApi, excelApi } from '../../../api';
 import { TableModal } from './components/TableModal';
+import { useModal } from '../../../contexts/ModalContext';
 import styles from './index.module.css';
 
 /**
@@ -8,6 +9,7 @@ import styles from './index.module.css';
  * Manages restaurant tables
  */
 const TableManagement = () => {
+  const { showAlert, showConfirm } = useModal();
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +34,7 @@ const TableManagement = () => {
       setLoading(true);
       setError(null);
       const response = await tableApi.getAllTables();
-      
+
       if (response.success) {
         setTables(response.data);
       }
@@ -49,7 +51,7 @@ const TableManagement = () => {
   // Filter tables
   const filteredTables = tables.filter(table => {
     const matchesSearch = table.tableNumber?.toString().includes(searchTerm) ||
-                         table.area?.toLowerCase().includes(searchTerm.toLowerCase());
+      table.area?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || table.status === filterStatus;
     const matchesArea = filterArea === 'all' || table.area === filterArea;
     return matchesSearch && matchesStatus && matchesArea;
@@ -74,17 +76,28 @@ const TableManagement = () => {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa bàn này?')) return;
+    showConfirm(
+      'Bạn có chắc muốn xóa bàn này?',
+      async () => {
+        try {
+          const response = await tableApi.deleteTable(id);
 
-    try {
-      const response = await tableApi.deleteTable(id);
-      if (response.success) {
-        await loadTables();
-        alert('Xóa bàn thành công!');
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || 'Không thể xóa bàn');
-    }
+          if (response.success) {
+            await loadTables();
+            showAlert('Xóa bàn thành công!', 'Thành công', 'success');
+          }
+
+        } catch (err) {
+          showAlert(
+            err.response?.data?.message || 'Không thể xóa bàn',
+            'Lỗi',
+            'error'
+          );
+        }
+      }, null,
+
+      'Xác nhận'
+    );
   };
 
   // Handle save
@@ -95,14 +108,14 @@ const TableManagement = () => {
         if (response.success) {
           await loadTables();
           setShowModal(false);
-          alert('Cập nhật bàn thành công!');
+          showAlert('Cập nhật bàn thành công!', 'Thành công', 'success');
         }
       } else {
         const response = await tableApi.createTable(tableData);
         if (response.success) {
           await loadTables();
           setShowModal(false);
-          alert('Tạo bàn thành công!');
+          showAlert('Tạo bàn thành công!', 'Thành công', 'success');
         }
       }
     } catch (err) {
@@ -118,7 +131,7 @@ const TableManagement = () => {
         await loadTables();
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Không thể cập nhật trạng thái');
+      showAlert(err.response?.data?.message || 'Không thể cập nhật trạng thái', 'Lỗi', 'error');
     }
   };
 
@@ -148,7 +161,7 @@ const TableManagement = () => {
     try {
       setIsExcelLoading(true);
       const response = await excelApi.exportData('table');
-      
+
       const blob = new Blob([response.data || response], { type: 'application/vnd.ms-excel' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -159,7 +172,7 @@ const TableManagement = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Lỗi khi tải xuống file Excel!');
+      showAlert('Lỗi khi tải xuống file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
@@ -177,14 +190,14 @@ const TableManagement = () => {
     try {
       setIsExcelLoading(true);
       await excelApi.importData('table', file);
-      alert('Import dữ liệu bàn thành công!');
-      await loadTables(); 
+      showAlert('Import dữ liệu bàn thành công!', 'Thành công', 'success');
+      await loadTables();
     } catch (err) {
-      alert(err.response?.data || 'Lỗi khi import file Excel!');
+      showAlert(err.response?.data || 'Lỗi khi import file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
-      event.target.value = ''; 
+      event.target.value = '';
     }
   };
 
@@ -247,37 +260,37 @@ const TableManagement = () => {
         </div>
 
         <div className={styles.actionGroup}>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleFileChange} 
-                    accept=".xlsx, .xls" 
-                    style={{ display: 'none' }} 
-                  />
-        
-                  <button 
-                    className={styles.exportBtn}
-                    onClick={handleExportExcel}
-                    disabled={isExcelLoading}
-                  >
-                    <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-export'}`}></i>
-                    Export
-                  </button>
-        
-                  <button 
-                    className={styles.importBtn}
-                    onClick={handleImportClick}
-                    disabled={isExcelLoading}
-                  >
-                    <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-import'}`}></i>
-                    Import
-                  </button>
-        
-                  <button className={styles.createBtn} onClick={handleCreate}>
-                    <i className="fas fa-plus"></i>
-                    Thêm bàn
-                  </button>
-                </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls"
+            style={{ display: 'none' }}
+          />
+
+          <button
+            className={styles.exportBtn}
+            onClick={handleExportExcel}
+            disabled={isExcelLoading}
+          >
+            <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-export'}`}></i>
+            Export
+          </button>
+
+          <button
+            className={styles.importBtn}
+            onClick={handleImportClick}
+            disabled={isExcelLoading}
+          >
+            <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-import'}`}></i>
+            Import
+          </button>
+
+          <button className={styles.createBtn} onClick={handleCreate}>
+            <i className="fas fa-plus"></i>
+            Thêm bàn
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -315,8 +328,8 @@ const TableManagement = () => {
           </div>
         ) : (
           currentTables.map(table => (
-            <div 
-              key={table.id} 
+            <div
+              key={table.id}
               className={`${styles.tableCard} ${styles[getStatusColor(table.status)]}`}
             >
               <div className={styles.cardHeader}>
@@ -372,7 +385,7 @@ const TableManagement = () => {
 
       {totalPages > 1 && (
         <div className={styles.pagination}>
-          <button 
+          <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
             className={styles.pageBtn}
@@ -392,7 +405,7 @@ const TableManagement = () => {
             ))}
           </div>
 
-          <button 
+          <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
             className={styles.pageBtn}

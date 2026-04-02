@@ -1,9 +1,9 @@
-const { Dish, InvoiceItem, Category, Invoice } = require("../schemas")
-const responseHandler = require("../utils/responseHandler");
+const { Dish, InvoiceItem, Category, Invoice } = require("../schemas");
 const sequelize = require("../config/db");
-const webSocketService = require("../utils/webSocketService"); // Import WebSocketService
+const webSocketService = require("../utils/socketHandler");
+const notificationController = require("./notificationController");
 
-// ===== mapper =====
+// ===== MAPPER =====
 const toResponse = (item) => ({
   id: item.id,
   invoiceId: item.invoiceId,
@@ -16,241 +16,134 @@ const toResponse = (item) => ({
   createdAt: item.createdAt,
   updatedAt: item.updatedAt,
 
-  // 👇 thêm phần trả về đầy đủ
   dish: item.dish
     ? {
-      id: item.dish.id,
-      name: item.dish.name,
-      price: Number(item.dish.price),
-      image: item.dish.image,
-      status: item.dish.status,
-      category: item.dish.category
-        ? {
-          id: item.dish.category.id,
-          name: item.dish.category.name
-        }
-        : null
-    }
+        id: item.dish.id,
+        name: item.dish.name,
+        price: Number(item.dish.price),
+        image: item.dish.image,
+        status: item.dish.status,
+        category: item.dish.category
+          ? {
+              id: item.dish.category.id,
+              name: item.dish.category.name
+            }
+          : null
+      }
     : null
 });
 
-// ================= CREATE =================
-exports.createInvoiceItem = async (req, res, next) => {
-  try {
-    const { quantity, unitPrice } = req.body;
+module.exports = {
 
-    const totalPrice = unitPrice * quantity;
-
-    const item = await InvoiceItem.create({
-      ...req.body,
-      totalPrice
-    });
-
-    return responseHandler.success(
-      res,
-      toResponse(item),
-      "Invoice item created successfully"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= GET BY ID =================
-exports.getInvoiceItemById = async (req, res, next) => {
-  try {
-    const item = await InvoiceItem.findByPk(req.params.id, {
-      include: [
-        {
-          model: Dish,
-          as: "dish",
-          include: [
-            {
-              model: Category,
-              as: "category"
-            }
-          ]
-        }
-      ]
-    });
-
-    if (!item) {
-      return responseHandler.error(res, "Invoice item not found", 404);
-    }
-
-    return responseHandler.success(res, toResponse(item), "Retrieved successfully");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= GET ALL =================
-exports.getAllInvoiceItems = async (req, res, next) => {
-  try {
-    const items = await InvoiceItem.findAll({
-      include: [
-        {
-          model: Dish,
-          as: "dish",
-          include: [
-            {
-              model: Category,
-              as: "category"
-            }
-          ]
-        }
-      ]
-    });
-
-    return responseHandler.success(
-      res,
-      items.map(toResponse),
-      "Invoice items retrieved successfully"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= UPDATE =================
-exports.updateInvoiceItem = async (req, res, next) => {
-  try {
-    const item = await InvoiceItem.findByPk(req.params.id);
-
-    if (!item) {
-      return responseHandler.error(res, "Invoice item not found", 404);
-    }
-
-    const { quantity, unitPrice, status } = req.body;
-
-    const totalPrice = unitPrice * quantity;
-
-    await item.update({
-      ...req.body,
-      totalPrice,
-      status: status || item.status
-    });
-
-    return responseHandler.success(res, toResponse(item), "Updated successfully");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= DELETE =================
-exports.deleteInvoiceItem = async (req, res, next) => {
-  try {
-    const item = await InvoiceItem.findByPk(req.params.id);
-
-    if (!item) {
-      return responseHandler.error(res, "Invoice item not found", 404);
-    }
-
-    await item.destroy();
-
-    return responseHandler.success(res, null, "Deleted successfully");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= GET BY INVOICE =================
-exports.getInvoiceItemsByInvoice = async (req, res, next) => {
-  try {
-    const items = await InvoiceItem.findAll({
-      where: { invoiceId: req.params.invoiceId },
-      include: [
-        {
-          model: Dish,
-          as: "dish",
-          include: [
-            {
-              model: Category,
-              as: "category"
-            }
-          ]
-        }
-      ]
-    });
-
-    return responseHandler.success(
-      res,
-      items.map(toResponse),
-      "Retrieved successfully"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= GET BY DISH =================
-exports.getInvoiceItemsByDish = async (req, res, next) => {
-  try {
-    const items = await InvoiceItem.findAll({
-      where: { dishId: req.params.dishId },
-      include: [
-        {
-          model: Dish,
-          as: "dish",
-          include: [
-            {
-              model: Category,
-              as: "category"
-            }
-          ]
-        }
-      ]
-    });
-
-    return responseHandler.success(
-      res,
-      items.map(toResponse),
-      "Retrieved successfully"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= UPDATE QUANTITY =================
-exports.updateQuantity = async (req, res, next) => {
-  try {
-    const { quantity } = req.query;
+  // ===== CREATE =====
+  CreateInvoiceItem: async function (data) {
+    const { quantity, unitPrice } = data;
 
     if (!quantity || quantity <= 0) {
-      return responseHandler.error(res, "Quantity must be > 0", 400);
+      throw new Error("Quantity must be > 0");
     }
 
-    const item = await InvoiceItem.findByPk(req.params.id);
+    const totalPrice = unitPrice * quantity;
 
-    if (!item) {
-      return responseHandler.error(res, "Invoice item not found", 404);
+    return await InvoiceItem.create({
+      ...data,
+      totalPrice
+    });
+  },
+
+  // ===== GET =====
+  GetInvoiceItemById: async function (id) {
+    const item = await InvoiceItem.findByPk(id, {
+      include: [{
+        model: Dish,
+        as: "dish",
+        include: [{ model: Category, as: "category" }]
+      }]
+    });
+
+    if (!item) throw new Error("Invoice item not found");
+    return item;
+  },
+
+  GetAllInvoiceItems: async function () {
+    return await InvoiceItem.findAll({
+      include: [{
+        model: Dish,
+        as: "dish",
+        include: [{ model: Category, as: "category" }]
+      }]
+    });
+  },
+
+  GetByInvoice: async function (invoiceId) {
+    return await InvoiceItem.findAll({
+      where: { invoiceId },
+      include: [{
+        model: Dish,
+        as: "dish",
+        include: [{ model: Category, as: "category" }]
+      }]
+    });
+  },
+
+  GetByDish: async function (dishId) {
+    return await InvoiceItem.findAll({
+      where: { dishId },
+      include: [{
+        model: Dish,
+        as: "dish",
+        include: [{ model: Category, as: "category" }]
+      }]
+    });
+  },
+
+  // ===== UPDATE =====
+  UpdateInvoiceItem: async function (id, data) {
+    const item = await InvoiceItem.findByPk(id);
+    if (!item) throw new Error("Invoice item not found");
+
+    const { quantity, unitPrice } = data;
+
+    const totalPrice = unitPrice * quantity;
+
+    return await item.update({
+      ...data,
+      totalPrice
+    });
+  },
+
+  UpdateQuantity: async function (id, quantity) {
+    if (!quantity || quantity <= 0) {
+      throw new Error("Quantity must be > 0");
     }
+
+    const item = await InvoiceItem.findByPk(id);
+    if (!item) throw new Error("Invoice item not found");
 
     const totalPrice = item.unitPrice * quantity;
 
-    await item.update({ quantity, totalPrice });
+    return await item.update({ quantity, totalPrice });
+  },
 
-    return responseHandler.success(res, toResponse(item), "Quantity updated");
-  } catch (err) {
-    next(err);
-  }
-};
+  // ===== DELETE =====
+  DeleteInvoiceItem: async function (id) {
+    const item = await InvoiceItem.findByPk(id);
+    if (!item) throw new Error("Invoice item not found");
 
-// ================= ADD ITEM TO INVOICE =================
-exports.addItemToInvoice = async (req, res, next) => {
-  try {
-    const { invoiceId, dishId, quantity } = req.query;
+    return await item.destroy();
+  },
 
+  // ===== ADD ITEM =====
+  AddItemToInvoice: async function (invoiceId, dishId, quantity) {
     if (!quantity || quantity <= 0) {
-      return responseHandler.error(res, "Quantity must be > 0", 400);
+      throw new Error("Quantity must be > 0");
     }
 
     const dish = await Dish.findByPk(dishId);
+    const invoice = await Invoice.findByPk(invoiceId);
 
-    if (!dish) {
-      return responseHandler.error(res, "Dish not found", 404);
-    }
+    if (!dish) throw new Error("Dish not found");
+    if (!invoice) throw new Error("Invoice not found");
 
     const unitPrice = dish.price;
     const totalPrice = unitPrice * quantity;
@@ -263,86 +156,74 @@ exports.addItemToInvoice = async (req, res, next) => {
       totalPrice
     });
 
-    return responseHandler.success(res, toResponse(item), "Added successfully");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= UPDATE STATUS =================
-exports.updateStatus = async (req, res, next) => {
-  const t = await sequelize.transaction();
-  try {
-    let { status } = req.query;
-    status = status.toUpperCase().trim();
-
-    const item = await InvoiceItem.findByPk(req.params.id, {
-      include: [{ model: Invoice }],
-      transaction: t
+    // notify
+    await notificationController.createAndSend({
+      title: "Món mới được gọi",
+      message: `Bàn ${invoice.tableId} gọi ${quantity}x ${dish.name}`,
+      type: "NEW_ORDER",
+      recipientType: "ALL",
+      data: { invoiceId, tableId: invoice.tableId }
     });
 
-    if (!item) {
-      await t.rollback();
-      return responseHandler.error(res, "Invoice item not found", 404);
-    }
+    return item;
+  },
 
-    // ❗ Validate flow
-    if (item.status === "SERVED") {
-      await t.rollback();
-      return responseHandler.error(res, "Cannot update a served item", 400);
-    }
+  // ===== STATUS =====
+  UpdateStatus: async function (id, status) {
+    const t = await sequelize.transaction();
 
-    if (item.status === "CANCELLED") {
-      await t.rollback();
-      return responseHandler.error(res, "Cannot update a cancelled item", 400);
-    }
+    try {
+      status = status.toUpperCase().trim();
 
-    const oldStatus = item.status;
+      const item = await InvoiceItem.findByPk(id, {
+        include: [{ model: Invoice }],
+        transaction: t
+      });
 
-    // update item
-    await item.update(
-      {
-        status,
-        updatedAt: new Date()
-      },
-      { transaction: t }
-    );
+      if (!item) throw new Error("Invoice item not found");
 
-    // ================= BUSINESS LOGIC =================
-    // Nếu chuyển sang CANCELLED thì trừ tiền invoice
-    if (status === "CANCELLED" && oldStatus !== "CANCELLED") {
-      const invoice = item.Invoice;
+      if (item.status === "SERVED") {
+        throw new Error("Cannot update served item");
+      }
 
-      if (invoice) {
-        let currentTotal = invoice.totalAmount || 0;
-        let itemPrice = item.totalPrice || 0;
+      if (item.status === "CANCELLED") {
+        throw new Error("Cannot update cancelled item");
+      }
 
-        let newTotal = currentTotal - itemPrice;
+      const oldStatus = item.status;
 
-        // đảm bảo không âm
-        if (newTotal < 0) newTotal = 0;
+      await item.update({ status }, { transaction: t });
 
-        await invoice.update(
-          { totalAmount: newTotal },
-          { transaction: t }
+      // update invoice total nếu cancel
+      if (status === "CANCELLED" && oldStatus !== "CANCELLED") {
+        const invoice = item.Invoice;
+
+        if (invoice) {
+          let newTotal = (invoice.totalAmount || 0) - (item.totalPrice || 0);
+          if (newTotal < 0) newTotal = 0;
+
+          await invoice.update({ totalAmount: newTotal }, { transaction: t });
+        }
+      }
+
+      await t.commit();
+
+      // websocket
+      if (item.Invoice) {
+        webSocketService.sendInvoiceItemStatusUpdate(
+          item.Invoice.id,
+          item.id,
+          status
         );
       }
+
+      return item;
+
+    } catch (err) {
+      await t.rollback();
+      throw err;
     }
+  },
 
-    await t.commit();
-
-    // ================= WEBSOCKET =================
-    if (item.Invoice) {
-      webSocketService.sendInvoiceItemStatusUpdate(
-        item.Invoice.id,
-        item.id,
-        status
-      );
-    }
-
-    return responseHandler.success(res, item, "Status updated");
-  } catch (err) {
-    await t.rollback();
-    next(err);
-  }
+  ToResponse: toResponse
 };

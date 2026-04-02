@@ -29,18 +29,28 @@ const Invoice = sequelize.define(
 
     createdAt: {
       type: DataTypes.DATE,
-      field: "created_at",
-      defaultValue: DataTypes.NOW
+      field: "created_at"
+    },
+
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: "updated_at"
     },
 
     paidAt: {
       type: DataTypes.DATE,
       field: "paid_at"
+    },
+
+    deletedAt: {
+      type: DataTypes.DATE,
+      field: "deleted_at"
     }
   },
   {
     tableName: "invoices",
-    timestamps: false
+    timestamps: true, 
+    paranoid: true, 
   }
 );
 

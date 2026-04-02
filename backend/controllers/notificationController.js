@@ -1,197 +1,99 @@
 const Notification = require("../schemas/notificationSchema");
-const responseHandler = require("../utils/responseHandler");
+const { Op } = require("sequelize");
+const webSocketService = require("../utils/socketHandler");
 
-// ================= CREATE =================
-exports.createNotification = async (req, res, next) => {
-  try {
-    const notification = await Notification.create(req.body);
-    return responseHandler.success(res, notification, "Created");
-  } catch (err) {
-    next(err);
-  }
-};
+module.exports = {
+    // Lấy tất cả thông báo (ADMIN)
+    GetAllNotifications: async function () {
+        return await Notification.findAll({
+            order: [["created_at", "DESC"]]
+        });
+    },
 
-// ================= GET BY ID =================
-exports.getNotificationById = async (req, res, next) => {
-  try {
-    const data = await Notification.findByPk(req.params.id);
+    // Lấy thông báo theo người nhận
+    GetByRecipient: async function (recipientType, recipientId) {
+        return await Notification.findAll({
+            where: {
+                [Op.or]: [
+                    { recipientType: "ALL" },
+                    {
+                        [Op.and]: [
+                            { recipientType },
+                            { recipientId }
+                        ]
+                    }
+                ]
+            },
+            order: [["created_at", "DESC"]]
+        });
+    },
 
-    if (!data) {
-      return responseHandler.error(res, "Not found", 404);
+    // Đếm số thông báo chưa đọc
+    GetUnreadCount: async function (recipientType, recipientId) {
+        return await Notification.count({
+            where: {
+                isRead: false,
+                [Op.or]: [
+                    { recipientType: "ALL" },
+                    {
+                        [Op.and]: [
+                            { recipientType },
+                            { recipientId }
+                        ]
+                    }
+                ]
+            }
+        });
+    },
+
+    // Đánh dấu một thông báo là đã đọc
+    MarkAsRead: async function (id) {
+        const notification = await Notification.findByPk(id);
+        if (!notification) throw new Error("id not found");
+        return await notification.update({ isRead: true });
+    },
+
+    // Đánh dấu tất cả thông báo của người nhận là đã đọc
+    MarkAllAsRead: async function (recipientType, recipientId) {
+        return await Notification.update(
+            { isRead: true },
+            {
+                where: {
+                    isRead: false,
+                    [Op.or]: [
+                        { recipientType: "ALL" },
+                        {
+                            [Op.and]: [
+                                { recipientType },
+                                { recipientId }
+                            ]
+                        }
+                    ]
+                }
+            }
+        );
+    },
+
+    // Xóa thông báo
+    DeleteNotification: async function (id) {
+        const notification = await Notification.findByPk(id);
+        if (!notification) throw new Error("id not found");
+        return await notification.destroy();
+    },
+
+    // Helper function để tạo và gửi thông báo (dùng trong code)
+    createAndSend: async function (data) {
+        const notification = await Notification.create(data);
+
+        // Phát qua WebSocket tới kênh chung notifications
+        webSocketService.sendGlobalNotification(data.type, data.message, {
+            ...data.data,
+            id: notification.id,
+            createdAt: notification.createdAt,
+            type: data.type,
+            title: data.title
+        });
+
+        return notification;
     }
-
-    return responseHandler.success(res, data);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= GET ALL =================
-exports.getAllNotifications = async (req, res, next) => {
-  try {
-    const list = await Notification.findAll();
-    return responseHandler.success(res, list);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= UPDATE =================
-exports.updateNotification = async (req, res, next) => {
-  try {
-    const data = await Notification.findByPk(req.params.id);
-
-    if (!data) {
-      return responseHandler.error(res, "Not found", 404);
-    }
-
-    await data.update(req.body);
-
-    return responseHandler.success(res, data, "Updated");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= DELETE =================
-exports.deleteNotification = async (req, res, next) => {
-  try {
-    const data = await Notification.findByPk(req.params.id);
-
-    if (!data) {
-      return responseHandler.error(res, "Not found", 404);
-    }
-
-    await data.destroy();
-
-    return responseHandler.success(res, null, "Deleted");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= FILTER =================
-
-// by recipient
-exports.getByRecipient = async (req, res, next) => {
-  try {
-    const { recipientType, recipientId } = req.query;
-
-    const list = await Notification.findAll({
-      where: { recipientType, recipientId }
-    });
-
-    return responseHandler.success(res, list);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// unread
-exports.getUnreadByRecipient = async (req, res, next) => {
-  try {
-    const { recipientType, recipientId } = req.query;
-
-    const list = await Notification.findAll({
-      where: {
-        recipientType,
-        recipientId,
-        read: false
-      }
-    });
-
-    return responseHandler.success(res, list);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ordered
-exports.getByRecipientOrdered = async (req, res, next) => {
-  try {
-    const { recipientType, recipientId } = req.query;
-
-    const list = await Notification.findAll({
-      where: { recipientType, recipientId },
-      order: [["createdAt", "DESC"]]
-    });
-
-    return responseHandler.success(res, list);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// count unread
-exports.countUnread = async (req, res, next) => {
-  try {
-    const { recipientType, recipientId } = req.query;
-
-    const count = await Notification.count({
-      where: {
-        recipientType,
-        recipientId,
-        read: false
-      }
-    });
-
-    return responseHandler.success(res, count);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= MARK READ =================
-
-exports.markAsRead = async (req, res, next) => {
-  try {
-    const data = await Notification.findByPk(req.params.id);
-
-    if (!data) {
-      return responseHandler.error(res, "Not found", 404);
-    }
-
-    await data.update({ read: true });
-
-    return responseHandler.success(res, data, "Marked as read");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// mark all
-exports.markAllAsRead = async (req, res, next) => {
-  try {
-    const { recipientType, recipientId } = req.body;
-
-    await Notification.update(
-      { read: true },
-      {
-        where: { recipientType, recipientId }
-      }
-    );
-
-    return responseHandler.success(res, null, "All marked as read");
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= SEND =================
-
-exports.sendNotification = async (req, res, next) => {
-  try {
-    const { recipientType, recipientId, title, message } = req.body;
-
-    const data = await Notification.create({
-      recipientType,
-      recipientId,
-      title,
-      message
-    });
-
-    return responseHandler.success(res, data, "Sent");
-  } catch (err) {
-    next(err);
-  }
 };

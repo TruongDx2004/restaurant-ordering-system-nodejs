@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { categoryApi, excelApi } from '../../../../api';
 import { CategoryModal } from './CategoryModal';
+import { useModal } from '../../../../contexts/ModalContext';
 import styles from './CategoryManagement.module.css';
 
 /**
@@ -8,6 +9,7 @@ import styles from './CategoryManagement.module.css';
  * CRUD operations for categories
  */
 export const CategoryManagement = () => {
+  const { showAlert, showConfirm } = useModal();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,7 +32,7 @@ export const CategoryManagement = () => {
       setLoading(true);
       setError(null);
       const response = await categoryApi.getAll();
-      
+
       if (response.success) {
         setCategories(response.data);
       }
@@ -66,19 +68,17 @@ export const CategoryManagement = () => {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa danh mục này? Tất cả món ăn trong danh mục sẽ bị ảnh hưởng.')) {
-      return;
-    }
-
-    try {
-      const response = await categoryApi.deleteCategory(id);
-      if (response.success) {
-        await loadCategories();
-        alert('Xóa danh mục thành công!');
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || 'Không thể xóa danh mục');
-    }
+    showConfirm('Bạn có chắc muốn xóa danh mục này?', async () => {
+      try {
+        const response = await categoryApi.deleteCategory(id);
+        if (response.success) {
+          await loadCategories();
+          showAlert('Xóa danh mục thành công!', 'Thành công', 'success');
+        }
+      } catch (err) {
+        showAlert(err.response?.data?.message || 'Không thể xóa danh mục', 'Lỗi', 'error');
+      };
+    }, null, 'Xác nhận');
   };
 
   // Handle save
@@ -89,14 +89,14 @@ export const CategoryManagement = () => {
         if (response.success) {
           await loadCategories();
           setShowModal(false);
-          alert('Cập nhật danh mục thành công!');
+          showAlert('Cập nhật danh mục thành công!', 'Thành công', 'success');
         }
       } else {
         const response = await categoryApi.createCategory(categoryData);
         if (response.success) {
           await loadCategories();
           setShowModal(false);
-          alert('Tạo danh mục thành công!');
+          showAlert('Tạo danh mục thành công!', 'Thành công', 'success');
         }
       }
     } catch (err) {
@@ -108,7 +108,7 @@ export const CategoryManagement = () => {
     try {
       setIsExcelLoading(true);
       const response = await excelApi.exportData('category'); // Đổi thành 'category'
-      
+
       const blob = new Blob([response.data || response], { type: 'application/vnd.ms-excel' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -119,7 +119,7 @@ export const CategoryManagement = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Lỗi khi tải xuống file Excel!');
+      showAlert('Lỗi khi tải xuống file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
@@ -137,10 +137,10 @@ export const CategoryManagement = () => {
     try {
       setIsExcelLoading(true);
       await excelApi.importData('category', file);
-      alert('Import dữ liệu danh mục thành công!');
+      showAlert('Import dữ liệu danh mục thành công!', 'Thành công', 'success');
       await loadCategories();
     } catch (err) {
-      alert(err.response?.data || 'Lỗi khi import file Excel!');
+      showAlert(err.response?.data || 'Lỗi khi import file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
@@ -181,15 +181,15 @@ export const CategoryManagement = () => {
         </div>
 
         <div className={styles.actionGroup}>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept=".xlsx, .xls" 
-            style={{ display: 'none' }} 
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls"
+            style={{ display: 'none' }}
           />
 
-          <button 
+          <button
             className={styles.exportBtn}
             onClick={handleExportExcel}
             disabled={isExcelLoading}
@@ -198,7 +198,7 @@ export const CategoryManagement = () => {
             Export
           </button>
 
-          <button 
+          <button
             className={styles.importBtn}
             onClick={handleImportClick}
             disabled={isExcelLoading}

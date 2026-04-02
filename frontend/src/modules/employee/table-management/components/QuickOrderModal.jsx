@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { dishApi, categoryApi, invoiceApi } from '../../../../api';
+import { useModal } from '../../../../contexts/ModalContext';
 import styles from './QuickOrderModal.module.css';
 
 /**
@@ -7,6 +8,7 @@ import styles from './QuickOrderModal.module.css';
  * Allows employees to quickly take orders for a specific table
  */
 const QuickOrderModal = ({ table, onClose, onOrderSuccess }) => {
+  const { showAlert } = useModal();
   const [dishes, setDishes] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,7 @@ const QuickOrderModal = ({ table, onClose, onOrderSuccess }) => {
         items: cart.map(item => ({
           dishId: item.id,
           quantity: item.quantity,
-          notes: ''
+          note: ''
         }))
       };
       
@@ -91,7 +93,7 @@ const QuickOrderModal = ({ table, onClose, onOrderSuccess }) => {
         onClose();
       }
     } catch (err) {
-      alert('Lỗi khi đặt món: ' + (err.message || 'Lỗi không xác định'));
+      showAlert('Lỗi khi đặt món: ' + (err.message || 'Lỗi không xác định'), 'Lỗi', 'error');
     } finally {
       setSubmitting(false);
     }

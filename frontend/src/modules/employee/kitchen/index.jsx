@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { invoiceApi, invoiceItemApi } from '../../../api';
 import { webSocketService } from '../../../services/webSocketService';
+import { useModal } from '../../../contexts/ModalContext';
 import styles from './index.module.css';
 
 /**
@@ -8,6 +9,7 @@ import styles from './index.module.css';
  * Mapping with backend InvoiceItemStatus: WAITING, PREPARING, SERVED
  */
 const KitchenView = () => {
+  const { showAlert } = useModal();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,14 +17,12 @@ const KitchenView = () => {
   // WebSocket Subscriptions
   useEffect(() => {
     console.log('[Kitchen View] Subscribing to real-time updates...');
-    
-    // 1. Subscribe to NEW_ORDER
+
     const unsubscribeNewOrders = webSocketService.subscribe('/topic/orders', (message) => {
       console.log('[Kitchen View] New order notification:', message);
       fetchKitchenItems(); // Reload all items
     });
 
-    // 2. Subscribe to ITEM_STATUS_UPDATE (to catch changes made by other staff)
     const unsubscribeStatusUpdates = webSocketService.subscribe('/topic/orders/status', (message) => {
       console.log('[Kitchen View] Status update received:', message);
       fetchKitchenItems();
@@ -125,7 +125,7 @@ const KitchenView = () => {
         );
       }
     } catch (err) {
-      alert('Lỗi: ' + (err.message || 'Không thể cập nhật'));
+      showAlert('Lỗi: ' + (err.message || 'Không thể cập nhật'), 'Lỗi', 'error');
     }
   };
 

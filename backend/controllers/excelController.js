@@ -1,99 +1,99 @@
-const ExcelJS = require('exceljs');
-const { User, Table, Category, Dish } = require('../schemas');
-const sequelize = require('../config/db');
-const responseHandler = require('../utils/responseHandler');
+const ExcelJS = require("exceljs");
+const { User, Table, Category, Dish } = require("../schemas");
+const sequelize = require("../config/db");
+const bcrypt = require("bcrypt");
 
-/**
- * Excel Controller
- * Xử lý Import/Export dữ liệu cho Dish, Category, Table, User
- */
-
+// ===== CONFIG =====
 const entityConfigs = {
   dish: {
     model: Dish,
     columns: [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'Tên món', key: 'name', width: 30 },
-      { header: 'Giá', key: 'price', width: 15 },
-      { header: 'Trạng thái', key: 'status', width: 15 },
-      { header: 'Tên Danh mục', key: 'categoryName', width: 20 },
-      { header: 'Link ảnh', key: 'image', width: 40 }
+      { header: "ID", key: "id", width: 10 },
+      { header: "Tên món", key: "name", width: 30 },
+      { header: "Giá", key: "price", width: 15 },
+      { header: "Trạng thái", key: "status", width: 15 },
+      { header: "Tên Danh mục", key: "categoryName", width: 20 },
+      { header: "Link ảnh", key: "image", width: 40 }
     ],
     mapRow: (row) => ({
-      name: row.getCell(2).value,
-      price: Number(row.getCell(3).value),
-      status: row.getCell(4).value || 'AVAILABLE',
-      categoryName: row.getCell(5).value,
-      image: row.getCell(6).value || ''
+      name: getCellValue(row.getCell(2)),
+      price: Number(getCellValue(row.getCell(3))),
+      status: getCellValue(row.getCell(4)) || "AVAILABLE",
+      categoryName: getCellValue(row.getCell(5)),
+      image: getCellValue(row.getCell(6)) || ""
     })
   },
+
   category: {
     model: Category,
     columns: [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'Tên danh mục', key: 'name', width: 30 }
+      { header: "ID", key: "id", width: 10 },
+      { header: "Tên danh mục", key: "name", width: 30 }
     ],
     mapRow: (row) => ({
-      name: row.getCell(2).value
+      name: getCellValue(row.getCell(2))
     })
   },
+
   table: {
     model: Table,
     columns: [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'Số bàn', key: 'tableNumber', width: 15 },
-      { header: 'Khu vực', key: 'area', width: 15 },
-      { header: 'Trạng thái', key: 'status', width: 15 },
-      { header: 'Đang hoạt động', key: 'isActive', width: 15 }
+      { header: "ID", key: "id", width: 10 },
+      { header: "Số bàn", key: "tableNumber", width: 15 },
+      { header: "Khu vực", key: "area", width: 15 },
+      { header: "Trạng thái", key: "status", width: 15 },
+      { header: "Đang hoạt động", key: "isActive", width: 15 }
     ],
     mapRow: (row) => ({
-      tableNumber: row.getCell(2).value,
-      area: row.getCell(3).value || 'Khu vực 1',
-      status: row.getCell(4).value || 'AVAILABLE',
-      isActive: row.getCell(5).value === 'TRUE' || row.getCell(5).value === true
+      tableNumber: getCellValue(row.getCell(2)),
+      area: getCellValue(row.getCell(3)) || "Khu vực 1",
+      status: getCellValue(row.getCell(4)) || "AVAILABLE",
+      isActive:
+        getCellValue(row.getCell(5)) === "TRUE" ||
+        getCellValue(row.getCell(5)) === true
     })
   },
+
   user: {
     model: User,
     columns: [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'Email', key: 'email', width: 20 },
-      { header: 'Họ tên', key: 'name', width: 30 },
-      { header: 'Số điện thoại', key: 'phone', width: 20 },
-      { header: 'Vai trò', key: 'role', width: 15 },
-      { header: 'Ngày tạo', key: 'createdAt', width: 20 },
+      { header: "ID", key: "id", width: 10 },
+      { header: "Email", key: "email", width: 20 },
+      { header: "Họ tên", key: "name", width: 30 },
+      { header: "Số điện thoại", key: "phone", width: 20 },
+      { header: "Vai trò", key: "role", width: 15 }
     ],
-    mapRow: (row) => ({
-      email: row.getCell(2).value,
-      name: row.getCell(3).value,
-      phone: row.getCell(4).value,
-      role: row.getCell(5).value || 'EMPLOYEE',
-      password: row.getCell(6).value || '123456', // Mật khẩu mặc định nếu trống
-      createdAt: row.getCell(7).value,
-      isActive: row.getCell(8).value === 'TRUE' || row.getCell(8).value === true
+    mapRow: async (row) => ({
+      email: getCellValue(row.getCell(2)),
+      name: getCellValue(row.getCell(3)),
+      phone: getCellValue(row.getCell(4)),
+      role: getCellValue(row.getCell(5)) || "EMPLOYEE",
+      password: await bcrypt.hash("123456", 10)
     })
   }
 };
 
-// ================= EXPORT =================
-exports.exportData = async (req, res, next) => {
-  try {
-    const { entity } = req.params;
+// ===== HELPER =====
+const getCellValue = (cell) => {
+  if (!cell) return null;
+  if (typeof cell === "object") {
+    return cell.text || cell.richText?.map(t => t.text).join("") || null;
+  }
+  return cell;
+};
+
+// ===== EXPORT =====
+module.exports = {
+
+  ExportData: async function (entity) {
     const config = entityConfigs[entity];
+    if (!config) throw new Error("Entity không hợp lệ");
 
-    if (!config) {
-      return responseHandler.error(res, 'Entity không hợp lệ', 400);
-    }
+    let data;
 
-    if (entity === 'dish') {
+    if (entity === "dish") {
       data = await Dish.findAll({
-        include: [
-          {
-            model: Category,
-            as: "category",
-            attributes: ["name"]
-          }
-        ]
+        include: [{ model: Category, as: "category", attributes: ["name"] }]
       });
     } else {
       data = await config.model.findAll();
@@ -101,20 +101,18 @@ exports.exportData = async (req, res, next) => {
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(entity.toUpperCase());
-
     worksheet.columns = config.columns;
 
-    // Add rows
     data.forEach(item => {
       const json = item.toJSON();
 
-      if (entity === 'dish') {
+      if (entity === "dish") {
         worksheet.addRow({
           id: json.id,
           name: json.name,
           price: json.price,
           status: json.status,
-          categoryName: json.category?.name || '',
+          categoryName: json.category?.name || "",
           image: json.image
         });
       } else {
@@ -122,122 +120,88 @@ exports.exportData = async (req, res, next) => {
       }
     });
 
-    // Formatting header
     worksheet.getRow(1).font = { bold: true };
 
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=${entity}_export.xlsx`
-    );
+    return workbook;
+  },
 
-    await workbook.xlsx.write(res);
-    res.end();
-
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ================= IMPORT =================
-exports.importData = async (req, res, next) => {
-  const t = await sequelize.transaction();
-  try {
-    const { entity } = req.params;
+  ImportData: async function (entity, fileBuffer) {
     const config = entityConfigs[entity];
+    if (!config) throw new Error("Entity không hợp lệ");
+    if (!fileBuffer) throw new Error("Vui lòng tải lên file excel");
 
+    const t = await sequelize.transaction();
 
-    if (!config) {
-      return responseHandler.error(res, 'Entity không hợp lệ', 400);
-    }
+    try {
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(fileBuffer);
+      const worksheet = workbook.getWorksheet(1);
 
-    if (!req.file) {
-      return responseHandler.error(res, 'Vui lòng tải lên file excel', 400);
-    }
-
-    
-
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(req.file.buffer);
-    const worksheet = workbook.getWorksheet(1);
-
-    const rows = [];
-    let processedRows;
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) { // Bỏ qua header
-        rows.push(config.mapRow(row));
+      const rows = [];
+      for (let i = 2; i <= worksheet.rowCount; i++) {
+        rows.push(await config.mapRow(worksheet.getRow(i)));
       }
-    });
 
-    if(config.model === Dish) {
+      let processedRows = rows;
 
-      const categories = await Category.findAll({ transaction: t });
+      // ===== DISH SPECIAL =====
+      if (config.model === Dish) {
+        const categories = await Category.findAll({ transaction: t });
 
-      // Map: name → id
-      const categoryMap = {};
-      categories.forEach(c => {
-        categoryMap[c.name.trim().toLowerCase()] = c.id;
-      });
+        const map = {};
+        categories.forEach(c => {
+          map[c.name.trim().toLowerCase()] = c.id;
+        });
 
-      processedRows = await Promise.all(
-        rows.map(async row => {
-          const categoryName = row.categoryName?.trim().toLowerCase();
+        processedRows = await Promise.all(
+          rows.map(async row => {
+            const name = row.categoryName?.trim().toLowerCase();
+            let categoryId = map[name];
 
-          let categoryId = categoryMap[categoryName];
+            if (!categoryId) {
+              const [newCategory] = await Category.findOrCreate({
+                where: { name: row.categoryName },
+                transaction: t
+              });
 
-          if (!categoryId) {
-            const newCategory = await Category.create(
-              { name: row.categoryName },
-              { transaction: t }
-            );
+              categoryId = newCategory.id;
+              map[name] = categoryId;
+            }
 
-            categoryId = newCategory.id;
-            categoryMap[categoryName] = categoryId;
-          }
+            return {
+              name: row.name,
+              price: row.price,
+              status: row.status,
+              categoryId,
+              image: row.image
+            };
+          })
+        );
+      }
 
-          return {
-            name: row.name,
-            price: row.price,
-            status: row.status,
-            categoryId,
-            image: row.image
-          };
-        })
-      );
-    
-    } else {
-      processedRows = rows;
+      // ===== BULK INSERT =====
+      const chunkSize = 50;
+      let count = 0;
+
+      for (let i = 0; i < processedRows.length; i += chunkSize) {
+        const chunk = processedRows.slice(i, i + chunkSize);
+
+        await config.model.bulkCreate(chunk, {
+          transaction: t,
+          validate: true,
+          ignoreDuplicates: true
+        });
+
+        count += chunk.length;
+      }
+
+      await t.commit();
+      return { count };
+
+    } catch (err) {
+      await t.rollback();
+      throw err;
     }
-
-    // Batch processing: Lưu mỗi lần 50 rows
-    const chunkSize = 50;
-    let importedCount = 0;
-
-    for (let i = 0; i < processedRows.length; i += chunkSize) {
-      const chunk = processedRows.slice(i, i + chunkSize);
-
-      await config.model.bulkCreate(chunk, {
-        transaction: t,
-        validate: true
-      });
-
-      importedCount += chunk.length;
-    }
-
-    await t.commit();
-
-    return responseHandler.success(
-      res,
-      { count: importedCount },
-      `Import ${entity} thành công: ${importedCount} dòng`
-    );
-
-  } catch (err) {
-    await t.rollback();
-    console.error('[Excel Import Error]:', err);
-    return responseHandler.error(res, `Lỗi import: ${err.message}`, 500);
   }
+
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { userApi, excelApi } from '../../../api';
 import { UserModal } from './components/UserModal';
+import { useModal } from '../../../contexts/ModalContext';
 import styles from './index.module.css';
 
 /**
@@ -8,6 +9,7 @@ import styles from './index.module.css';
  * Manages employees and admin users
  */
 const UserManagement = () => {
+  const { showAlert, showConfirm } = useModal();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,7 +33,7 @@ const UserManagement = () => {
       setLoading(true);
       setError(null);
       const response = await userApi.getAllUsers();
-      
+
       if (response.success) {
         setUsers(response.data);
       }
@@ -45,8 +47,8 @@ const UserManagement = () => {
   // Filter users
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.phone?.includes(searchTerm);
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phone?.includes(searchTerm);
     const matchesRole = filterRole === 'all' || user.role === filterRole;
     return matchesSearch && matchesRole;
   });
@@ -70,17 +72,17 @@ const UserManagement = () => {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa người dùng này?')) return;
-
-    try {
-      const response = await userApi.deleteUser(id);
-      if (response.success) {
-        await loadUsers();
-        alert('Xóa người dùng thành công!');
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || 'Không thể xóa người dùng');
-    }
+    showConfirm(`Xác nhận xóa người dùng này?`, async () => {
+      try {
+        const response = await userApi.deleteUser(id);
+        if (response.success) {
+          await loadUsers();
+          showAlert('Xóa người dùng thành công!', 'Thành công', 'success');
+        }
+      } catch (err) {
+        showAlert(err.response?.data?.message || 'Không thể xóa người dùng', 'Lỗi', 'error');
+      };
+    }, null, 'Xác nhận');
   };
 
   // Handle save
@@ -91,14 +93,14 @@ const UserManagement = () => {
         if (response.success) {
           await loadUsers();
           setShowModal(false);
-          alert('Cập nhật người dùng thành công!');
+          showAlert('Cập nhật người dùng thành công!', 'Thành công', 'success');
         }
       } else {
         const response = await userApi.createUser(userData);
         if (response.success) {
           await loadUsers();
           setShowModal(false);
-          alert('Tạo người dùng thành công!');
+          showAlert('Tạo người dùng thành công!', 'Thành công', 'success');
         }
       }
     } catch (err) {
@@ -109,8 +111,8 @@ const UserManagement = () => {
   const handleExportExcel = async () => {
     try {
       setIsExcelLoading(true);
-      const response = await excelApi.exportData('user'); 
-      
+      const response = await excelApi.exportData('user');
+
       const blob = new Blob([response.data || response], { type: 'application/vnd.ms-excel' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -121,7 +123,7 @@ const UserManagement = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Lỗi khi tải xuống file Excel!');
+      showAlert('Lỗi khi tải xuống file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
@@ -139,10 +141,10 @@ const UserManagement = () => {
     try {
       setIsExcelLoading(true);
       await excelApi.importData('user', file);
-      alert('Import dữ liệu người dùng thành công!');
+      showAlert('Import dữ liệu người dùng thành công!', 'Thành công', 'success');
       await loadUsers();
     } catch (err) {
-      alert(err.response?.data || 'Lỗi khi import file Excel!');
+      showAlert(err.response?.data || 'Lỗi khi import file Excel!', 'Lỗi', 'error');
       console.error(err);
     } finally {
       setIsExcelLoading(false);
@@ -200,37 +202,37 @@ const UserManagement = () => {
         </div>
 
         <div className={styles.actionGroup}>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleFileChange} 
-                    accept=".xlsx, .xls" 
-                    style={{ display: 'none' }} 
-                  />
-        
-                  <button 
-                    className={styles.exportBtn}
-                    onClick={handleExportExcel}
-                    disabled={isExcelLoading}
-                  >
-                    <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-export'}`}></i>
-                    Export
-                  </button>
-        
-                  <button 
-                    className={styles.importBtn}
-                    onClick={handleImportClick}
-                    disabled={isExcelLoading}
-                  >
-                    <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-import'}`}></i>
-                    Import
-                  </button>
-        
-                  <button className={styles.createBtn} onClick={handleCreate}>
-                    <i className="fas fa-plus"></i>
-                    Thêm người dùng
-                  </button>
-                </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls"
+            style={{ display: 'none' }}
+          />
+
+          <button
+            className={styles.exportBtn}
+            onClick={handleExportExcel}
+            disabled={isExcelLoading}
+          >
+            <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-export'}`}></i>
+            Export
+          </button>
+
+          <button
+            className={styles.importBtn}
+            onClick={handleImportClick}
+            disabled={isExcelLoading}
+          >
+            <i className={`fas ${isExcelLoading ? 'fa-spinner fa-spin' : 'fa-file-import'}`}></i>
+            Import
+          </button>
+
+          <button className={styles.createBtn} onClick={handleCreate}>
+            <i className="fas fa-plus"></i>
+            Thêm người dùng
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

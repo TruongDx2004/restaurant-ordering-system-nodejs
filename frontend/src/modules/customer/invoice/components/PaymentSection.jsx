@@ -5,11 +5,11 @@ import styles from './PaymentSection.module.css';
  * PaymentSection Component
  * Hiển thị thông tin thanh toán và nút thanh toán
  */
-export const PaymentSection = ({ 
-  invoice, 
+export const PaymentSection = ({
+  invoice,
   items,
   onPayment,
-  isProcessing 
+  isProcessing
 }) => {
   const [paymentMethod, setPaymentMethod] = useState('CASH');
 
@@ -40,10 +40,10 @@ export const PaymentSection = ({
    * Check if all items are ready
    * Only allows payment if items are 'SERVED' or 'CANCELLED'
    */
-  const hasPendingItems = items && items.some(item => 
+  const hasPendingItems = items && items.some(item =>
     item.status === 'WAITING' || item.status === 'PREPARING'
   );
-  
+
   const canPay = items && items.length > 0 && !isProcessing && !hasPendingItems;
 
   /**
@@ -60,12 +60,12 @@ export const PaymentSection = ({
       {/* Payment Summary */}
       <div className={styles.summary}>
         <h3>Tổng kết</h3>
-        
+
         <div className={styles.summaryRow}>
           <span>Tạm tính:</span>
           <span>{formatCurrency(subtotal)}</span>
         </div>
-        
+
         <div className={`${styles.summaryRow} ${styles.total}`}>
           <span>Tổng cộng:</span>
           <span>{formatCurrency(total)}</span>
@@ -75,7 +75,7 @@ export const PaymentSection = ({
       {/* Payment Method Selection */}
       <div className={styles.paymentMethod}>
         <h3>Phương thức thanh toán</h3>
-        
+
         <div className={styles.methodOptions}>
           <label className={styles.methodOption}>
             <input
@@ -90,7 +90,7 @@ export const PaymentSection = ({
               <span>Tiền mặt</span>
             </div>
           </label>
-
+          {/* 
           <label className={styles.methodOption}>
             <input
               type="radio"
@@ -103,8 +103,8 @@ export const PaymentSection = ({
               <i className="fas fa-university"></i>
               <span>Chuyển khoản</span>
             </div>
-          </label>
-
+          </label> */}
+          {/* 
           <label className={styles.methodOption}>
             <input
               type="radio"
@@ -117,14 +117,14 @@ export const PaymentSection = ({
               <i className="fas fa-credit-card"></i>
               <span>Thẻ tín dụng</span>
             </div>
-          </label>
+          </label> */}
 
           <label className={styles.methodOption}>
             <input
               type="radio"
               name="paymentMethod"
-              value="E_WALLET"
-              checked={paymentMethod === 'E_WALLET'}
+              value="MOMO"
+              checked={paymentMethod === 'MOMO'}
               onChange={(e) => setPaymentMethod(e.target.value)}
             />
             <div className={styles.methodInfo}>

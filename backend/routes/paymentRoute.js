@@ -1,40 +1,72 @@
 const express = require("express");
 const router = express.Router();
+const paymentController = require("../controllers/paymentController");
+const { checkLogin, checkRole } = require("../utils/authHandler");
+const responseHandler = require("../utils/responseHandler");
 
-const controller = require("../controllers/paymentController");
-const { verifyToken, requireRole } = require("../utils/authMiddleware");
+// Lấy tất cả thanh toán (ADMIN)
+router.get("/", checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+    try {
+        const payments = await paymentController.GetAllPayments();
+        return responseHandler.success(res, payments, "Payments retrieved successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-/**
- * ADMIN
- */
-router.post("/", verifyToken, requireRole("ADMIN"), controller.createPayment);
-router.put("/:id", verifyToken, requireRole("ADMIN"), controller.updatePayment);
-router.delete("/:id", verifyToken, requireRole("ADMIN"), controller.deletePayment);
+// Xử lý tạo thanh toán chung (Customer/Staff)
+router.post("/process", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, method, amount } = req.query; // Giữ nguyên req.query như code cũ để tương thích frontend
+        const payment = await paymentController.ProcessPayment(invoiceId, method, amount);
+        return responseHandler.success(res, payment, "Payment processed");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-/**
- * AUTH USER
- */
-router.get("/", verifyToken, controller.getAllPayments);
-router.get("/:id", verifyToken, controller.getPaymentById);
+// Yêu cầu thanh toán tiền mặt (Customer)
+router.post("/request-cash", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, tableId, amount } = req.body;
+        await paymentController.RequestCashPayment(invoiceId, tableId, amount);
+        return responseHandler.success(res, null, "Cash payment request sent to all staff");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-router.get("/invoice/:invoiceId", verifyToken, controller.getPaymentByInvoice);
-router.get("/transaction/:transactionCode", verifyToken, controller.getPaymentByTransactionCode);
+// Xác nhận thanh toán theo hóa đơn (Staff/Admin)
+router.patch("/confirm-by-invoice", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, transactionCode } = req.body;
+        const payment = await paymentController.ConfirmPaymentByInvoice(invoiceId, transactionCode);
+        return responseHandler.success(res, payment, "Payment confirmed");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-router.get("/status/:status", verifyToken, controller.getPaymentsByStatus);
-router.get("/method/:method", verifyToken, controller.getPaymentsByMethod);
+// Tạo thanh toán qua MoMo (Customer)
+router.post("/momo", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, amount, orderInfo } = req.body;
+        const result = await paymentController.CreateMoMoPayment(invoiceId, amount, orderInfo);
+        return responseHandler.success(res, result, "MoMo payment link created");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-/**
- * ACTIONS
- */
-router.patch("/:id/status", verifyToken, controller.updatePaymentStatus);
-
-router.post(
-  "/process",
-  verifyToken,
-  controller.processPayment
-);
-
-router.patch("/:id/confirm", verifyToken, controller.confirmPayment);
-router.patch("/:id/cancel", verifyToken, controller.cancelPayment);
+// MoMo IPN Callback (Public - gọi từ server MoMo)
+router.post("/momo-ipn", async function (req, res, next) {
+    try {
+        await paymentController.HandleMoMoIPN(req.body);
+        return res.status(204).send();
+    } catch (err) {
+        console.error("MoMo IPN Error:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
 
 module.exports = router;

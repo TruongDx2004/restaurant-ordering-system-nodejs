@@ -43,9 +43,9 @@
     border-radius: 0 4px 4px 0;
 }
 
-.statusIndicator.cash { background: #ff4d4f; }
-.statusIndicator.eWallet { background: #52c41a; }
-.statusIndicator.order { background: #1890ff; }
+.statusIndicator.paymentRequest { background: #ff4d4f; }
+.statusIndicator.paymentSuccess { background: #52c41a; }
+.statusIndicator.newOrder { background: #1890ff; }
 .statusIndicator.system { background: #8c8c8c; }
 
 /* Icon Section */
@@ -68,9 +68,9 @@
     transition: transform 0.3s ease;
 }
 
-.iconCircle.cash { background: #fff1f0; color: #ff4d4f; }
-.iconCircle.eWallet { background: #f6ffed; color: #52c41a; }
-.iconCircle.order { background: #e6f7ff; color: #1890ff; }
+.iconCircle.paymentRequest { background: #fff1f0; color: #ff4d4f; }
+.iconCircle.paymentSuccess { background: #f6ffed; color: #52c41a; }
+.iconCircle.newOrder { background: #e6f7ff; color: #1890ff; }
 .iconCircle.system { background: #f5f5f5; color: #8c8c8c; }
 
 .typeLabel {
@@ -113,6 +113,38 @@
     font-size: 14px;
     color: #595959;
     line-height: 1.5;
+}
+
+/* Action Box */
+.actionBox {
+    margin-top: 12px;
+}
+
+.confirmPaymentBtn {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.confirmPaymentBtn:hover {
+    background-color: #ff7875;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+}
+
+.confirmPaymentBtn:disabled {
+    background-color: #ffa39e;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* Actions */

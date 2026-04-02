@@ -1,37 +1,47 @@
 const express = require("express");
 const router = express.Router();
-
 const messageController = require("../controllers/messageController");
-const { verifyToken, requireRole } = require("../utils/authMiddleware");
+const { checkLogin } = require("../utils/authHandler");
+const responseHandler = require("../utils/responseHandler");
 
-/**
- * ADMIN
- */
-router.post("/", verifyToken, messageController.createMessage);
-router.put("/:id", verifyToken, messageController.updateMessage);
-router.delete("/:id", verifyToken, messageController.deleteMessage);
+//POST api/messages
+router.post("/", checkLogin, async function (req, res, next) {
+    try {
+        const msg = await messageController.CreateMessage(req.body);
+        return responseHandler.success(res, msg, "Message sent successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-/**
- * AUTH USER
- */
-router.get("/", verifyToken, messageController.getAllMessages);
-router.get("/:id", verifyToken, messageController.getMessageById);
+//Get api/messages/conversations
+router.get("/conversations", checkLogin, async function (req, res, next) {
+    try {
+        const data = await messageController.GetConversations();
+        return responseHandler.success(res, data, "Conversations retrieved successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-router.get("/invoice/:invoiceId", verifyToken, messageController.getMessagesByInvoice);
-router.get("/table/:tableId", verifyToken, messageController.getMessagesByTable);
-router.get("/table/:tableId/ordered", verifyToken, messageController.getMessagesByTableOrderedByDate);
+//Get api/messages/table/:tableId
+router.get("/table/:tableId", checkLogin, async function (req, res, next) {
+    try {
+        const data = await messageController.GetMessagesByTable(req.params.tableId);
+        return responseHandler.success(res, data, "Messages retrieved successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-router.get("/type/:messageType", verifyToken, messageController.getMessagesByType);
-router.get("/sender/:sender", verifyToken, messageController.getMessagesBySender);
-
-/**
- * SEND
- */
-router.post(
-  "/send-to-table",
-  verifyToken,
-  requireRole("ADMIN", "EMPLOYEE", "CUSTOMER"),
-  messageController.sendMessageToTable
-);
+//DELETE api/messages/:id
+router.delete("/:id", checkLogin, async function (req, res, next) {
+    try {
+        await messageController.DeleteMessage(req.params.id);
+        return responseHandler.success(res, null, "Deleted");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
 module.exports = router;

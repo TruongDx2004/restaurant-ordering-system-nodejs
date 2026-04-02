@@ -27,7 +27,7 @@ const adminAuthApi = {
    */
   refreshToken: async (refreshToken) => {
     try {
-      const response = await axiosInstance.post('/auth/refresh', null, {
+      const response = await axiosInstance.post('/auth/refresh-token', null, {
         headers: {
           'Refresh-Token': refreshToken
         }
@@ -38,19 +38,6 @@ const adminAuthApi = {
     }
   },
 
-  /**
-   * Logout user
-   * @param {number} userId - User ID
-   * @returns {Promise} Success response
-   */
-  logout: async (userId) => {
-    try {
-      const response = await axiosInstance.post(`/auth/logout/${userId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
 };
 
 export default adminAuthApi;

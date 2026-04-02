@@ -35,18 +35,33 @@ const Payment = sequelize.define(
     paidAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      field: "paid_at",
-      defaultValue: DataTypes.NOW
+      field: "paid_at"
     },
 
     transactionCode: {
       type: DataTypes.STRING,
       field: "transaction_code"
+    },
+
+    createdAt: {
+      type: DataTypes.DATE,
+      field: "created_at"
+    },
+    
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: "updated_at"
+    },
+
+    deletedAt: {
+      type: DataTypes.DATE,
+      field: "deleted_at"
     }
   },
   {
     tableName: "payments",
-    timestamps: false
+    timestamps: true,
+    paranoid: true,
   }
 );
 

@@ -33,12 +33,6 @@ const Message = sequelize.define(
       allowNull: false
     },
 
-    createdAt: {
-      type: DataTypes.DATE,
-      field: "created_at",
-      defaultValue: DataTypes.NOW
-    },
-
     invoiceId: {
       type: DataTypes.BIGINT,
       field: "invoiceid"
@@ -47,11 +41,27 @@ const Message = sequelize.define(
     tableId: {
       type: DataTypes.BIGINT,
       field: "tableid"
+    },
+
+    createdAt: {
+      type: DataTypes.DATE,
+      field: "created_at"
+    },
+
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: "updated_at"
+    },
+
+    deletedAt: {
+      type: DataTypes.DATE,
+      field: "deleted_at"
     }
   },
   {
     tableName: "messages",
-    timestamps: false
+    timestamps: true, 
+    paranoid: true, 
   }
 );
 

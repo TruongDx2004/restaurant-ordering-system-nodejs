@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { dishApi } from '../../../api';
+import { useModal } from '../../../contexts/ModalContext';
 import styles from './index.module.css';
 
 /**
@@ -8,6 +9,7 @@ import styles from './index.module.css';
  * Trang chi tiết món ăn với khả năng thêm vào giỏ hàng
  */
 export const DishDetail = () => {
+  const { showAlert } = useModal();
   const { dishId } = useParams();
   const navigate = useNavigate();
   
@@ -15,8 +17,12 @@ export const DishDetail = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
-  const [showNotification, setShowNotification] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState('');
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // Fetch dish details
   useEffect(() => {
@@ -37,7 +43,7 @@ export const DishDetail = () => {
         setDish(dishData);
       } catch (error) {
         console.error('Error fetching dish:', error);
-        showAlert('Không thể tải thông tin món ăn');
+        showAlert('Không thể tải thông tin món ăn', 'Lỗi', 'error');
       } finally {
         setLoading(false);
       }
@@ -47,13 +53,6 @@ export const DishDetail = () => {
       fetchDishDetail();
     }
   }, [dishId]);
-
-  // Show notification
-  const showAlert = (message) => {
-    setNotificationMessage(message);
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
-  };
 
   // Handle quantity change
   const handleDecrease = () => {
@@ -71,7 +70,7 @@ export const DishDetail = () => {
   // Handle add to cart
   const handleAddToCart = () => {
     if (!dish || dish.status !== 'AVAILABLE') {
-      showAlert('Món ăn hiện không có sẵn');
+      showToast('Món ăn hiện không có sẵn', 'error');
       return;
     }
 
@@ -85,7 +84,7 @@ export const DishDetail = () => {
       // Update quantity and notes
       existingCart[existingItemIndex].quantity += quantity;
       if (notes.trim()) {
-        existingCart[existingItemIndex].notes = notes.trim();
+        existingCart[existingItemIndex].note = notes.trim();
       }
     } else {
       // Add new item
@@ -95,7 +94,7 @@ export const DishDetail = () => {
         price: dish.price,
         image: dish.image,
         quantity: quantity,
-        notes: notes.trim(),
+        note: notes.trim(),
         category: dish.category
       });
     }
@@ -103,7 +102,7 @@ export const DishDetail = () => {
     // Save to localStorage
     localStorage.setItem('cart', JSON.stringify(existingCart));
     
-    showAlert(`Đã thêm ${quantity} ${dish.name} vào giỏ hàng`);
+    showToast(`Đã thêm ${quantity} ${dish.name} vào giỏ hàng`, 'success');
     
     // Reset form
     setQuantity(1);
@@ -256,11 +255,10 @@ export const DishDetail = () => {
         </button>
       </div>
 
-      {/* Notification */}
-      {showNotification && (
-        <div className={styles.notification}>
-          <i className="fas fa-check-circle"></i>
-          <span>{notificationMessage}</span>
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}>
+          {toast.message}
         </div>
       )}
     </div>

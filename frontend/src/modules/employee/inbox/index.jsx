@@ -16,6 +16,7 @@ const EmployeeInbox = () => {
     sending,
     markAsRead,
     sendMessage,
+    confirmPayment,
     refreshChat
   } = useEmployeeInbox();
 
@@ -101,16 +102,21 @@ const EmployeeInbox = () => {
             filteredConversations.map(conv => (
               <div
                 key={conv.id}
-                className={`${styles.conversationItem} ${activeTable?.id === conv.id ? styles.activeItem : ''}`}
+                className={`${styles.conversationItem} ${activeTable?.id === conv.id ? styles.activeItem : ''} ${conv.status === 'OCCUPIED' ? styles.occupiedItem : ''}`}
                 onClick={() => handleSelectTable(conv)}
               >
-                <div className={styles.tableAvatar}>{conv.tableNumber}</div>
+                <div className={`${styles.tableAvatar} ${conv.status === 'OCCUPIED' ? styles.avatarOccupied : ''}`}>
+                  {conv.tableNumber}
+                </div>
                 <div className={styles.itemInfo}>
                   <div className={styles.itemHeader}>
                     <span className={styles.tableName}>Bàn {conv.tableNumber}</span>
-                    <span className={styles.lastTime}></span>
+                    <span className={`${styles.tableStatusTag} ${styles[conv.status?.toLowerCase()]}`}>
+                      {conv.status === 'OCCUPIED' ? 'Có khách' : 'Trống'}
+                    </span>
                   </div>
                   <div className={styles.itemFooter}>
+                    {conv.sender === 'STAFF' && <span className={styles.senderTag}>Bạn: </span>}
                     <span className={styles.lastMsg}>{conv.lastMessage}</span>
                     {conv.unreadCount > 0 && (
                       <span className={styles.unreadBadge}>{conv.unreadCount}</span>
@@ -119,7 +125,8 @@ const EmployeeInbox = () => {
                 </div>
               </div>
             ))
-          )}
+
+          )};
         </div>
       </aside>
 
@@ -169,20 +176,39 @@ const EmployeeInbox = () => {
                 messages.map((msg, idx) => {
                   const isStaff = msg.sender === 'STAFF';
                   const isSystem = msg.sender === 'SYSTEM';
+                  const isRequestBill = msg.messageType === 'REQUEST_BILL';
 
                   return (
                     <div
                       key={msg.id || idx}
                       className={`${styles.messageRow} ${isStaff ? styles.myMessageRow :
-                        isSystem ? styles.systemRow : styles.theirMessageRow
+                        isSystem || isRequestBill ? styles.systemRow : styles.theirMessageRow
                         }`}
                     >
-                      <div className={`${styles.messageBubble} ${isStaff ? styles.myBubble :
-                        isSystem ? styles.systemBubble : styles.theirBubble
-                        }`}>
-                        {msg.content}
-                        <div className={styles.msgTime}>{formatTime(msg.createdAt)}</div>
-                      </div>
+                      {isRequestBill ? (
+                        <div className={styles.requestBillCard}>
+                          <div className={styles.requestIcon}>
+                            <i className="fas fa-file-invoice-dollar"></i>
+                          </div>
+                          <div className={styles.requestContent}>
+                            <h3>Yêu cầu thanh toán tiền mặt</h3>
+                            <p>{msg.content}</p>
+                            <button
+                              className={styles.confirmBtn}
+                              onClick={() => confirmPayment(msg.invoiceId)}
+                            >
+                              Xác nhận đã thu tiền
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={`${styles.messageBubble} ${isStaff ? styles.myBubble :
+                          isSystem ? styles.systemBubble : styles.theirBubble
+                          }`}>
+                          {msg.content}
+                          <div className={styles.msgTime}>{formatTime(msg.createdAt)}</div>
+                        </div>
+                      )}
                     </div>
                   );
                 })

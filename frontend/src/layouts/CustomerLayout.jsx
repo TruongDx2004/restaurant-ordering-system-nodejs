@@ -32,7 +32,7 @@ const CustomerLayout = () => {
   const location = useLocation();
 
   // Check if current page is profile, cart, or orders (pages without category nav & search)
-  const isSimpleHeaderPage = ['/customer/profile', '/customer/cart', '/customer/orders', '/customer/invoices', '/customer/inbox'].includes(location.pathname);
+  const isSimpleHeaderPage = ['/customer/profile', '/customer/cart', '/customer/orders', '/customer/invoices', '/customer/inbox', '/customer/payment-result'].includes(location.pathname);
 
   // Get table number from localStorage
   useEffect(() => {

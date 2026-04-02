@@ -7,7 +7,7 @@ import styles from './UserModal.module.css';
  */
 export const UserModal = ({ user, onSave, onClose }) => {
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
     phone: '',
     password: '',
@@ -20,7 +20,7 @@ export const UserModal = ({ user, onSave, onClose }) => {
   useEffect(() => {
     if (user) {
       setFormData({
-        fullName: user.fullName || '',
+        name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
         password: '', // Don't load password for security
@@ -42,7 +42,7 @@ export const UserModal = ({ user, onSave, onClose }) => {
     setError('');
 
     // Validation
-    if (!formData.fullName.trim()) {
+    if (!formData.name.trim()) {
       setError('Vui lòng nhập họ tên');
       return;
     }
@@ -97,14 +97,14 @@ export const UserModal = ({ user, onSave, onClose }) => {
           )}
 
           <div className={styles.formGroup}>
-            <label htmlFor="fullName">
+            <label htmlFor="name">
               Họ tên <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
-              id="fullName"
-              name="fullName"
-              value={formData.fullName}
+              id="name"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               placeholder="Nhập họ tên"
               required

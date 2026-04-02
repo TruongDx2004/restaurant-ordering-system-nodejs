@@ -2,88 +2,55 @@ import axios from './axiosConfig';
 
 /**
  * API service for managing messages
- * Interface for backend MessageController
+ * Tối giản và đồng nhất giữa Customer và Staff
  */
 export const messageApi = {
   /**
-   * Create a new message
+   * Tạo tin nhắn mới (Dùng chung)
    * @param {Object} messageData - { tableId, invoiceId, content, messageType, sender }
-   * @returns {Promise<Object>} Created message response
    */
   create: async (messageData) => {
     try {
       const response = await axios.post('/messages', messageData);
       return response;
     } catch (error) {
-      console.error('Error creating message:', error);
       throw error;
     }
   },
 
   /**
-   * Get messages by invoice ID
-   * @param {number} invoiceId
-   * @returns {Promise<Object>} List of messages
+   * Lấy danh sách hội thoại cho nhân viên (Inbox) - Có lastMessage
    */
-  getByInvoice: async (invoiceId) => {
+  getConversations: async () => {
     try {
-      const response = await axios.get(`/messages/invoice/${invoiceId}`);
+      const response = await axios.get('/messages/conversations');
       return response;
     } catch (error) {
-      console.error(`Error getting messages for invoice ${invoiceId}:`, error);
       throw error;
     }
   },
 
   /**
-   * Get messages by table ID
+   * Lấy lịch sử tin nhắn của một bàn
    * @param {number} tableId
-   * @returns {Promise<Object>} List of messages
    */
   getByTable: async (tableId) => {
     try {
       const response = await axios.get(`/messages/table/${tableId}`);
       return response;
     } catch (error) {
-      console.error(`Error getting messages for table ${tableId}:`, error);
       throw error;
     }
   },
 
   /**
-   * Get messages by table ordered by date
-   * @param {number} tableId
-   * @returns {Promise<Object>} Ordered list of messages
+   * Xóa tin nhắn
    */
-  getByTableOrdered: async (tableId) => {
+  delete: async (id) => {
     try {
-      const response = await axios.get(`/messages/table/${tableId}/ordered`);
+      const response = await axios.delete(`/messages/${id}`);
       return response;
     } catch (error) {
-      console.error(`Error getting ordered messages for table ${tableId}:`, error);
-      throw error;
-    }
-  },
-
-  /**
-   * Send a specific type of message to table
-   * @param {number} tableId
-   * @param {string} content
-   * @param {string} messageType - 'NORMAL', 'CALL_WAITER', 'REQUEST_BILL'
-   * @param {string} sender - 'CUSTOMER', 'STAFF', 'SYSTEM'
-   */
-  sendToTable: async (tableId, content, messageType, sender) => {
-    try {
-      const params = new URLSearchParams({
-        tableId,
-        content,
-        messageType,
-        sender
-      });
-      const response = await axios.post(`/messages/send-to-table?${params.toString()}`);
-      return response;
-    } catch (error) {
-      console.error(`Error sending message to table ${tableId}:`, error);
       throw error;
     }
   }

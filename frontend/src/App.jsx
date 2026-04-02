@@ -5,12 +5,14 @@ import { SearchProvider } from './contexts/SearchContext';
 import { CategoryProvider } from './contexts/CategoryContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { webSocketService } from './services/webSocketService';
+import { ModalProvider } from './contexts/ModalContext';
 import { AuthPage } from './modules/customer/auth';
 import CustomerLayout from './layouts/CustomerLayout';
 import CustomerHome from './modules/customer/home';
 import ProfilePage from './modules/customer/profile';
 import DishDetail from './modules/customer/dish-detail';
 import Invoice from './modules/customer/invoice';
+import PaymentResult from './modules/customer/payment-result';
 import Cart from './modules/customer/cart';
 import Orders from './modules/customer/orders';
 import Messages from './modules/customer/messages';
@@ -40,11 +42,12 @@ function App() {
   }, []);
 
   return (
-    <AdminAuthProvider>
-      <AuthProvider>
-        <SearchProvider>
-          <CategoryProvider>
-            <BrowserRouter>
+    <ModalProvider>
+      <AdminAuthProvider>
+        <AuthProvider>
+          <SearchProvider>
+            <CategoryProvider>
+              <BrowserRouter>
               <Routes>
                 {/* ==================== ADMIN ROUTES ==================== */}
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -159,6 +162,7 @@ function App() {
                   <Route path="dish/:dishId" element={<DishDetail />} />
                   <Route path="cart" element={<Cart />} />
                   <Route path="invoices" element={<Invoice />} />
+                  <Route path="payment-result" element={<PaymentResult />} />
                   <Route 
                     path="inbox" 
                     element={
@@ -180,7 +184,7 @@ function App() {
         </SearchProvider>
       </AuthProvider>
     </AdminAuthProvider>
-  );
-}
-
+    </ModalProvider>
+    );
+    }
 export default App;

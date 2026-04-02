@@ -14,10 +14,13 @@ const useNotifications = (recipientType, recipientId) => {
         setLoading(true);
         try {
             const response = await notificationApi.getByRecipient(recipientType, recipientId);
-            setNotifications(response.data.data || []);
+            // SỬA LỖI: response ở đây chính là object { success, data, message } từ axios interceptor
+            const data = response.data || [];
+            setNotifications(data);
             
             const countResponse = await notificationApi.getUnreadCount(recipientType, recipientId);
-            setUnreadCount(countResponse.data.data || 0);
+            // SỬA LỖI: tương tự cho unread count
+            setUnreadCount(countResponse.data || 0);
         } catch (err) {
             console.error('Error fetching notifications:', err);
             setError(err);
@@ -33,33 +36,58 @@ const useNotifications = (recipientType, recipientId) => {
     useEffect(() => {
         if (!recipientType || !recipientId) return;
 
-        // Subscribe to notifications via WebSocket
+        // 1. Subscribe to specific notifications
         const topic = recipientType === 'USER' 
             ? '/queue/notifications' 
             : `/topic/notifications/${recipientId}`;
             
-        const unsubscribe = webSocketService.subscribe(topic, (newNotification) => {
-            setNotifications(prev => [newNotification, ...prev]);
-            setUnreadCount(prev => prev + 1);
-            
-            // Play a sound or show a toast if needed
-            if (Notification.permission === 'granted') {
-                new Notification(newNotification.title, {
-                    body: newNotification.message,
-                });
-            }
+        const unsubscribeSpecific = webSocketService.subscribe(topic, (newNotification) => {
+            // Đảm bảo mapping đúng trường isRead
+            const normalized = {
+                ...newNotification,
+                isRead: newNotification.isRead || newNotification.read || false
+            };
+            handleNewNotification(normalized);
+        });
+
+        // 2. Subscribe to global notifications (for recipientType ALL)
+        const unsubscribeGlobal = webSocketService.subscribe('/topic/notifications', (msg) => {
+            // Chuẩn hóa dữ liệu từ WebSocket message sang Notification object
+            const normalizedNotif = {
+                id: msg.data?.id || Date.now(),
+                title: msg.title || msg.type,
+                message: msg.content,
+                type: msg.type,
+                data: msg.data,
+                isRead: false,
+                createdAt: msg.timestamp || new Date().toISOString()
+            };
+            handleNewNotification(normalizedNotif);
         });
 
         return () => {
-            unsubscribe();
+            unsubscribeSpecific();
+            unsubscribeGlobal();
         };
     }, [recipientType, recipientId, fetchNotifications]);
+
+    const handleNewNotification = (notif) => {
+        setNotifications(prev => {
+            if (prev.some(n => n.id === notif.id)) return prev;
+            return [notif, ...prev];
+        });
+        setUnreadCount(prev => prev + 1);
+        
+        if (Notification.permission === 'granted') {
+            new Notification(notif.title, { body: notif.message });
+        }
+    };
 
     const markAsRead = async (id) => {
         try {
             await notificationApi.markAsRead(id);
             setNotifications(prev => 
-                prev.map(n => n.id === id ? { ...n, read: true } : n)
+                prev.map(n => n.id === id ? { ...n, isRead: true } : n)
             );
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (err) {
@@ -70,7 +98,7 @@ const useNotifications = (recipientType, recipientId) => {
     const markAllAsRead = async () => {
         try {
             await notificationApi.markAllAsRead(recipientType, recipientId);
-            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             setUnreadCount(0);
         } catch (err) {
             console.error('Error marking all as read:', err);
@@ -82,7 +110,7 @@ const useNotifications = (recipientType, recipientId) => {
             const notificationToDelete = notifications.find(n => n.id === id);
             await notificationApi.delete(id);
             setNotifications(prev => prev.filter(n => n.id !== id));
-            if (notificationToDelete && !notificationToDelete.read) {
+            if (notificationToDelete && !notificationToDelete.isRead) {
                 setUnreadCount(prev => Math.max(0, prev - 1));
             }
         } catch (err) {
