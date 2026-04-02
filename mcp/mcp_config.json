@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "restaurant-mcp": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["restaurant_mcp.py"]
+    }
+  }
+}
