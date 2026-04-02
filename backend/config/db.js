@@ -1,7 +1,6 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-// =================== Cấu hình kết nối ===================
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'order_table_db_nodejs',
   process.env.DB_USER || 'root',
@@ -13,7 +12,6 @@ const sequelize = new Sequelize(
   }
 );
 
-// =================== Kết nối & sync bảng ===================
 (async () => {
   try {
     await sequelize.authenticate();
