@@ -1,6 +1,5 @@
 const Dish = require("../schemas/dishSchema");
 const Category = require("../schemas/categorySchema");
-const responseHandler = require("../utils/responseHandler");
 const sequelize = require("../config/db");
 
 // ===== MAPPER =====
@@ -23,8 +22,8 @@ const toEntity = (data, file, oldDish = null) => {
 
   if (file) {
     imageValue = `/uploads/${file.filename}`;
-    console.log('Updating dish image:', imageValue);
   }
+
   return {
     name: data.name,
     price: parseInt(data.price),
@@ -34,223 +33,85 @@ const toEntity = (data, file, oldDish = null) => {
   };
 };
 
-// ===== CONTROLLER =====
+module.exports = {
 
-// CREATE
-exports.createDish = async (req, res, next) => {
-  try {
-    const entity = toEntity(req.body, req.file);
+  CreateDish: async function (data, file) {
+    const entity = toEntity(data, file);
+    const dish = await Dish.create(entity);
+    return dish;
+  },
 
-    const created = await Dish.create(entity);
-
-    return responseHandler.success(
-      res,
-      toResponse(created),
-      "Món ăn được tạo thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET BY ID
-exports.getDishById = async (req, res, next) => {
-  try {
-    const dish = await Dish.findByPk(req.params.id, {
-      include: [
-        {
-          model: Category,
-          as: "category"
-        }
-      ]
+  GetDishById: async function (id) {
+    const dish = await Dish.findByPk(id, {
+      include: [{ model: Category, as: "category" }]
     });
-
 
     if (!dish) throw new Error("Không tìm thấy món ăn");
+    return dish;
+  },
 
-    return responseHandler.success(
-      res,
-      toResponse(dish),
-      "Món ăn được tìm thấy"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET ALL
-exports.getAllDishes = async (req, res, next) => {
-  try {
-    const dishes = await Dish.findAll({
-      include: [
-        {
-          model: Category,
-          as: "category"
-        }
-      ]
+  GetAllDishes: async function () {
+    return await Dish.findAll({
+      include: [{ model: Category, as: "category" }]
     });
+  },
 
-    return responseHandler.success(
-      res,
-      dishes.map(toResponse),
-      "Món ăn được tìm thấy"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// UPDATE
-exports.updateDish = async (req, res, next) => {
-  try {
-    const dish = await Dish.findByPk(req.params.id, {
-      include: [
-        {
-          model: Category,
-          as: "category"
-        }
-      ]
+  UpdateDish: async function (id, data, file) {
+    const dish = await Dish.findByPk(id, {
+      include: [{ model: Category, as: "category" }]
     });
 
     if (!dish) throw new Error("Không tìm thấy món ăn");
 
-    const entity = toEntity(req.body, req.file, dish);
+    const entity = toEntity(data, file, dish);
+    return await dish.update(entity);
+  },
 
-    await dish.update(entity);
-
-    return responseHandler.success(
-      res,
-      toResponse(dish),
-      "Chỉnh sửa món ăn thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// DELETE
-exports.deleteDish = async (req, res, next) => {
-  try {
-    const dish = await Dish.findByPk(req.params.id);
-
+  DeleteDish: async function (id) {
+    const dish = await Dish.findByPk(id);
     if (!dish) throw new Error("Không tìm thấy món ăn");
 
-    await dish.destroy();
+    return await dish.destroy();
+  },
 
-    return responseHandler.success(
-      res,
-      null,
-      "Xóa món ăn thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET BY STATUS
-exports.getDishesByStatus = async (req, res, next) => {
-  try {
-    const dishes = await Dish.findAll({
-      where: { status: req.params.status },
-      include: [
-        {
-          model: Category,
-          as: "category"
-        }
-      ]
+  GetDishesByStatus: async function (status) {
+    return await Dish.findAll({
+      where: { status },
+      include: [{ model: Category, as: "category" }]
     });
+  },
 
-    return responseHandler.success(
-      res,
-      dishes.map(toResponse),
-      "Tải danh sách món ăn thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET BY CATEGORY
-exports.getDishesByCategory = async (req, res, next) => {
-  try {
-    const dishes = await Dish.findAll({
-      where: { categoryId: req.params.categoryId },
-      include: [
-        {
-          model: Category,
-          as: "category"
-        }
-      ]
+  GetDishesByCategory: async function (categoryId) {
+    return await Dish.findAll({
+      where: { categoryId },
+      include: [{ model: Category, as: "category" }]
     });
+  },
 
-    return responseHandler.success(
-      res,
-      dishes.map(toResponse),
-      "Tải danh sách món ăn thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// SEARCH BY NAME
-exports.searchDishesByName = async (req, res, next) => {
-  try {
-    const { name } = req.query;
-
-    const dishes = await Dish.findAll({
+  SearchDishesByName: async function (name) {
+    return await Dish.findAll({
       where: {
         name: {
           [sequelize.Op.like]: `%${name}%`
         }
       },
-      include: [
-        {
-          model: Category,
-          as: "category"
-        }
-      ]
+      include: [{ model: Category, as: "category" }]
     });
+  },
 
-    return responseHandler.success(
-      res,
-      dishes.map(toResponse),
-      "Tải danh sách món ăn thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// UPDATE STATUS
-exports.updateDishStatus = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    let { status } = req.query;
-
-    if (!status) {
-      throw new Error("Yêu cầu trạng thái");
-    }
+  UpdateDishStatus: async function (id, status) {
+    if (!status) throw new Error("Yêu cầu trạng thái");
 
     status = status.toUpperCase().trim();
 
-    const allowedStatus = ["AVAILABLE", "SOLD_OUT"];
-
-    if (!allowedStatus.includes(status)) {
-      throw new Error("Trạng thái không hợp lệ");
-    }
+    const allowed = ["AVAILABLE", "SOLD_OUT"];
+    if (!allowed.includes(status)) throw new Error("Trạng thái không hợp lệ");
 
     const dish = await Dish.findByPk(id);
-    if (!dish) throw new Error("Không tim thấy món ăn")
+    if (!dish) throw new Error("Không tìm thấy món ăn");
 
-    await dish.update({ status });
+    return await dish.update({ status });
+  },
 
-    return responseHandler.success(
-      res,
-      toResponse(dish),
-      "Chỉnh sửa món ăn thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
+  ToResponse: toResponse
 };

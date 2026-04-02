@@ -1,31 +1,47 @@
 const express = require("express");
 const router = express.Router();
-
 const messageController = require("../controllers/messageController");
-const { checkLogin, checkRole } = require("../utils/authHandler");
-const { validate, messageValidator } = require("../utils/validateHandler");
+const { checkLogin } = require("../utils/authHandler");
+const responseHandler = require("../utils/responseHandler");
 
-/**
- * ADMIN
- */
-router.post("/", checkLogin, messageValidator.create, validate, messageController.createMessage);
-router.put("/:id", checkLogin, messageValidator.update, validate, messageController.updateMessage);
-router.delete("/:id", checkLogin, messageValidator.delete, validate, messageController.deleteMessage);
+//POST api/messages
+router.post("/", checkLogin, async function (req, res, next) {
+    try {
+        const msg = await messageController.CreateMessage(req.body);
+        return responseHandler.success(res, msg, "Message sent successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-/**
- * AUTH USER
- */
-router.get("/", checkLogin, messageController.getAllMessages);
-router.get("/:id", checkLogin, messageValidator.getById, validate, messageController.getMessageById);
-router.get("/invoice/:invoiceId", checkLogin, messageValidator.getByInvoice, validate, messageController.getMessagesByInvoice);
-router.get("/table/:tableId", checkLogin, messageValidator.getByTable, validate, messageController.getMessagesByTable);
-router.get("/table/:tableId/ordered", checkLogin, messageValidator.getByTableOrdered, validate, messageController.getMessagesByTableOrderedByDate);
-router.get("/type/:messageType", checkLogin, messageValidator.getByType, validate, messageController.getMessagesByType);
-router.get("/sender/:sender", checkLogin, messageValidator.getBySender, validate, messageController.getMessagesBySender);
+//Get api/messages/conversations
+router.get("/conversations", checkLogin, async function (req, res, next) {
+    try {
+        const data = await messageController.GetConversations();
+        return responseHandler.success(res, data, "Conversations retrieved successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-/**
- * SEND
- */
-router.post("/send-to-table", checkLogin, checkRole("ADMIN", "EMPLOYEE", "CUSTOMER"), messageValidator.send, validate, messageController.sendMessageToTable);
+//Get api/messages/table/:tableId
+router.get("/table/:tableId", checkLogin, async function (req, res, next) {
+    try {
+        const data = await messageController.GetMessagesByTable(req.params.tableId);
+        return responseHandler.success(res, data, "Messages retrieved successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
+
+//DELETE api/messages/:id
+router.delete("/:id", checkLogin, async function (req, res, next) {
+    try {
+        await messageController.DeleteMessage(req.params.id);
+        return responseHandler.success(res, null, "Deleted");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
 module.exports = router;

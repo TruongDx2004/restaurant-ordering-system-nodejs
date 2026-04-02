@@ -1,30 +1,72 @@
 const express = require("express");
 const router = express.Router();
-
-const controller = require("../controllers/paymentController");
+const paymentController = require("../controllers/paymentController");
 const { checkLogin, checkRole } = require("../utils/authHandler");
-const momo = require("../config/momo");
-const { validate, paymentValidator } = require("../utils/validateHandler");
+const responseHandler = require("../utils/responseHandler");
 
-router.post("/", checkLogin, checkRole("ADMIN"), paymentValidator.create, validate, controller.createPayment);
-router.put("/:id", checkLogin, checkRole("ADMIN"), paymentValidator.update, validate, controller.updatePayment);
-router.delete("/:id", checkLogin, checkRole("ADMIN"), paymentValidator.delete, validate, controller.deletePayment);
+// Lấy tất cả thanh toán (ADMIN)
+router.get("/", checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+    try {
+        const payments = await paymentController.GetAllPayments();
+        return responseHandler.success(res, payments, "Payments retrieved successfully");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-router.get("/", checkLogin, controller.getAllPayments);
-router.get("/:id", checkLogin, paymentValidator.getById, validate, controller.getPaymentById);
-router.get("/invoice/:invoiceId", checkLogin, paymentValidator.getByInvoice, validate, controller.getPaymentByInvoice);
-router.get("/transaction/:transactionCode", checkLogin, paymentValidator.getByTransaction, validate, controller.getPaymentByTransactionCode);
-router.get("/status/:status", checkLogin, paymentValidator.getByStatus, validate, controller.getPaymentsByStatus);
-router.get("/method/:method", checkLogin, paymentValidator.getByMethod, validate, controller.getPaymentsByMethod);
+// Xử lý tạo thanh toán chung (Customer/Staff)
+router.post("/process", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, method, amount } = req.query; // Giữ nguyên req.query như code cũ để tương thích frontend
+        const payment = await paymentController.ProcessPayment(invoiceId, method, amount);
+        return responseHandler.success(res, payment, "Payment processed");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-router.patch("/:id/status", checkLogin, paymentValidator.updateStatus, validate, controller.updatePaymentStatus);
-router.post("/process", checkLogin, paymentValidator.process, validate, controller.processPayment);
-router.post("/request-cash", checkLogin, paymentValidator.requestCash, validate, controller.requestCashPayment);
-router.patch("/:id/confirm", checkLogin, paymentValidator.confirm, validate, controller.confirmPayment);
-router.patch("/confirm-by-invoice", checkLogin, paymentValidator.confirmByInvoice, validate, controller.confirmPaymentByInvoice);
-router.patch("/:id/cancel", checkLogin, paymentValidator.cancel, validate, controller.cancelPayment);
+// Yêu cầu thanh toán tiền mặt (Customer)
+router.post("/request-cash", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, tableId, amount } = req.body;
+        await paymentController.RequestCashPayment(invoiceId, tableId, amount);
+        return responseHandler.success(res, null, "Cash payment request sent to all staff");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
 
-router.post("/momo", checkLogin, paymentValidator.momo, validate, controller.createMoMoPayment);
-router.post("/momo-ipn", paymentValidator.momoIPN, validate, controller.handleMoMoIPN);
+// Xác nhận thanh toán theo hóa đơn (Staff/Admin)
+router.patch("/confirm-by-invoice", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, transactionCode } = req.body;
+        const payment = await paymentController.ConfirmPaymentByInvoice(invoiceId, transactionCode);
+        return responseHandler.success(res, payment, "Payment confirmed");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
+
+// Tạo thanh toán qua MoMo (Customer)
+router.post("/momo", checkLogin, async function (req, res, next) {
+    try {
+        const { invoiceId, amount, orderInfo } = req.body;
+        const result = await paymentController.CreateMoMoPayment(invoiceId, amount, orderInfo);
+        return responseHandler.success(res, result, "MoMo payment link created");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    }
+});
+
+// MoMo IPN Callback (Public - gọi từ server MoMo)
+router.post("/momo-ipn", async function (req, res, next) {
+    try {
+        await paymentController.HandleMoMoIPN(req.body);
+        return res.status(204).send();
+    } catch (err) {
+        console.error("MoMo IPN Error:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
 
 module.exports = router;

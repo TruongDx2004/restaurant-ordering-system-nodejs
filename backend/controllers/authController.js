@@ -1,122 +1,45 @@
-const bcrypt = require("bcryptjs");
 const User = require("../schemas/userSchema");
+const bcrypt = require("bcryptjs");
 
-const authHandler = require("../utils/authHandler");
-const responseHandler = require("../utils/responseHandler");
-
-// remove password
-const sanitizeUser = (user) => {
-  const { password, refreshToken, ...rest } = user.toJSON();
-  return rest;
-};
-
-// ================= REGISTER =================
-exports.register = async (req, res, next) => {
-
-  try {
-
-    const { email, password, name, phone } = req.body;
-
-    // kiểm tra email tồn tại
-    const exist = await User.findOne({
-      where: { email }
-    });
-
-    if (exist) {
-      return responseHandler.error(res, "Email đã tồn tại", 400);
-    }
-
+module.exports = {
+  // Logic đăng ký
+  Register: async function (email, password, name, phone) {
     const hash = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
+    const newUser = await User.create({
       email,
       password: hash,
       name,
       phone,
       role: "EMPLOYEE"
     });
+    return newUser;
+  },
 
-    return responseHandler.success(
-      res,
-      { id: user.id },
-      "User đăng ký thành công"
-    );
-
-  } catch (err) {
-    next(err);
-  }
-
-};
-
-
-// ================= LOGIN =================
-exports.login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-
+  // Logic đăng nhập
+  Login: async function (email, password) {
     const user = await User.findOne({ where: { email } });
-
     if (!user) {
-      return responseHandler.error(res, "Không tìm thấy người dùng", 404);
+      throw new Error("Không tìm thấy người dùng");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
-      return responseHandler.error(res, "Mật khẩu không đúng", 401);
+      throw new Error("Mật khẩu không đúng");
     }
 
-    const accessToken = authHandler.generateAccessToken(user);
-    const refreshToken = authHandler.generateRefreshToken(user);
+    return user;
+  },
 
-    // lưu refresh token
-    await user.update({ refreshToken });
-
-    return responseHandler.success(
-      res,
-      {
-        token: accessToken,
-        refreshToken: refreshToken,
-        user: sanitizeUser(user)
-      },
-      "Login successful"
+  // Cập nhật Refresh Token
+  UpdateRefreshToken: async function (userId, refreshToken) {
+    return await User.update(
+      { refreshToken: refreshToken },
+      { where: { id: userId } }
     );
+  },
 
-  } catch (err) {
-    next(err);
+  // Lấy người dùng qua Refresh Token
+  GetUserByRefreshToken: async function (refreshToken) {
+    return await User.findOne({ where: { refreshToken } });
   }
-};
-
-
-// ================= REFRESH TOKEN =================
-exports.refreshToken = async (req, res, next) => {
-
-  try {
-
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return responseHandler.error(res, "Refresh token không được cung cấp", 400);
-    }
-
-    const user = await User.findOne({
-      where: { refreshToken }
-    });
-
-    if (!user) {
-      return responseHandler.error(res, "Refresh token không hợp lệ", 403);
-    }
-
-    const accessToken = authHandler.generateAccessToken(user);
-
-    return responseHandler.success(
-      res,
-      { accessToken },
-      "Access token mới đã được tạo"
-    );
-
-  } catch (err) {
-    next(err);
-  }
-
 };

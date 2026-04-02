@@ -1,122 +1,35 @@
 const Category = require("../schemas/categorySchema");
-const responseHandler = require("../utils/responseHandler");
 
-// ===== MAPPER =====
-const toResponse = (category) => ({
-  id: category.id,
-  name: category.name
-});
+module.exports = {
+  CreateCategory: async function (name) {
+    return await Category.create({ name });
+  },
 
-const toEntity = (data) => ({
-  name: data.name
-});
+  GetAllCategories: async function () {
+    return await Category.findAll();
+  },
 
-// ===== CONTROLLER =====
+  GetCategoryById: async function (id) {
+    const category = await Category.findByPk(id);
+    if (!category) throw new Error("id not found");
+    return category;
+  },
 
-// CREATE
-exports.createCategory = async (req, res, next) => {
-  try {
-    const entity = toEntity(req.body);
+  GetCategoryByName: async function (name) {
+    const category = await Category.findOne({ where: { name } });
+    if (!category) throw new Error("name not found");
+    return category;
+  },
 
-    const created = await Category.create(entity);
+  UpdateCategory: async function (id, data) {
+    const category = await Category.findByPk(id);
+    if (!category) throw new Error("id not found");
+    return await category.update(data);
+  },
 
-    return responseHandler.success(
-      res,
-      toResponse(created),
-      "Danh mục được tạo thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET BY ID
-exports.getCategoryById = async (req, res, next) => {
-  try {
-    const category = await Category.findByPk(req.params.id);
-
-    if (!category) throw new Error("Category not found");
-
-    return responseHandler.success(
-      res,
-      toResponse(category),
-      "Danh mục được lấy thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET ALL
-exports.getAllCategories = async (req, res, next) => {
-  try {
-    const categories = await Category.findAll();
-
-    return responseHandler.success(
-      res,
-      categories.map(toResponse),
-      "Danh mục được lấy thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// UPDATE
-exports.updateCategory = async (req, res, next) => {
-  try {
-    const category = await Category.findByPk(req.params.id);
-
-    if (!category) throw new Error("Category not found");
-
-    const entity = toEntity(req.body);
-
-    await category.update(entity);
-
-    return responseHandler.success(
-      res,
-      toResponse(category),
-      "Danh mục chỉnh sửa thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// DELETE
-exports.deleteCategory = async (req, res, next) => {
-  try {
-    const category = await Category.findByPk(req.params.id);
-
-    if (!category) throw new Error("Category not found");
-
-    await category.destroy();
-
-    return responseHandler.success(
-      res,
-      null,
-      "Xóa danh mục thành công"
-    );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// GET BY NAME
-exports.getCategoryByName = async (req, res, next) => {
-  try {
-    const category = await Category.findOne({
-      where: { name: req.params.name }
-    });
-
-    if (!category) throw new Error("Category not found");
-
-    return responseHandler.success(
-      res,
-      toResponse(category),
-      "Category retrieved successfully"
-    );
-  } catch (err) {
-    next(err);
+  DeleteCategory: async function (id) {
+    const category = await Category.findByPk(id);
+    if (!category) throw new Error("id not found");
+    return await category.destroy();
   }
 };
