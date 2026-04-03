@@ -3,23 +3,19 @@ const socketHandler = require("../utils/socketHandler");
 const { Op } = require("sequelize");
 
 module.exports = {
-    // Tạo tin nhắn mới
     CreateMessage: async function (data) {
         const message = await Message.create(data);
 
-        // Phát qua WebSocket
-        if (message.sender === "STAFF") {
+        if (message.sender === "STAFF" || message.sender === "CUSTOMER") {
             socketHandler.sendMessageToTable(message.tableId, message.sender, message.content);
+            socketHandler.sendMessageToStaff(message.tableId, message.sender, message.content);
         } else if (message.sender === "SYSTEM") {
             socketHandler.sendGlobalNotification("SYSTEM_MESSAGE", message.content, { tableId: message.tableId });
-        } else if (message.sender === "CUSTOMER") {
-            socketHandler.sendMessageToStaff(message.tableId, message.sender, message.content);
         }
 
         return message;
     },
 
-    // Lấy tin nhắn theo bàn
     GetMessagesByTable: async function (tableId) {
         return await Message.findAll({
             where: { tableId },
@@ -27,9 +23,7 @@ module.exports = {
         });
     },
 
-    // Lấy danh sách hội thoại cho nhân viên (Tất cả các bàn)
     GetConversations: async function () {
-        // Lấy TẤT CẢ các bàn để nhân viên có thể thấy toàn bộ sơ đồ
         const allTables = await Table.findAll({
             order: [["tableNumber", "ASC"]],
             include: [{
@@ -54,10 +48,9 @@ module.exports = {
         });
     },
 
-    // Xóa tin nhắn
     DeleteMessage: async function (id) {
         const message = await Message.findByPk(id);
-        if (!message) throw new Error("Message not found");
+        if (!message) throw new Error("Không tìm thấy tin nhắn");
         return await message.destroy();
     }
 };

@@ -8,10 +8,9 @@ const crypto = require("crypto");
 const axios = require("axios");
 
 module.exports = {
-    // Xử lý thanh toán MoMo
     CreateMoMoPayment: async function (invoiceId, amount, orderInfo) {
         if (!invoiceId || !amount) {
-            throw new Error("Missing invoiceId or amount");
+            throw new Error("Thiếu thông tin bắt buộc");
         }
 
         const accessKey = 'F8BBA842ECF85';
@@ -65,12 +64,11 @@ module.exports = {
             });
             return response.data;
         } else {
-            throw new Error(response.data.message || "MoMo request failed");
+            throw new Error("Lỗi khi tạo đơn thanh toán MoMo");
         }
     },
 
-    HandleMoMoIPN: async function (ipnData) {
-        const { orderId, resultCode, transId } = ipnData;
+    HandleMoMoIPN: async function (orderId, resultCode, transId) {
         const payment = await Payment.findOne({ where: { transactionCode: orderId } });
 
         if (payment) {
@@ -95,7 +93,6 @@ module.exports = {
                         data: { invoiceId: invoice.id, tableId: invoice.tableId, method: "MOMO" }
                     });
                     
-                    // Gửi tín hiệu WebSocket để khách hàng chuyển trang
                     socketHandler.sendPaymentNotification(invoice.id, invoice.tableId, "PAID");
                 }
             } else {
@@ -104,7 +101,6 @@ module.exports = {
         }
     },
 
-    // Xử lý yêu cầu thanh toán tiền mặt
     RequestCashPayment: async function (invoiceId, tableId, amount) {
         if (!invoiceId || !tableId) {
             throw new Error("Missing required fields");
@@ -125,16 +121,15 @@ module.exports = {
         return true;
     },
 
-    // Xác nhận thanh toán theo hóa đơn
     ConfirmPaymentByInvoice: async function (invoiceId, transactionCode) {
-        if (!invoiceId) throw new Error("Missing invoiceId");
+        if (!invoiceId) throw new Error("Thiếu thông tin hóa đơn");
 
         const now = new Date();
         let payment = await Payment.findOne({ where: { invoiceId } });
 
         if (!payment) {
             const invoice = await Invoice.findByPk(invoiceId);
-            if (!invoice) throw new Error("Invoice not found");
+            if (!invoice) throw new Error("Không tìm thấy hóa đơn");
 
             payment = await Payment.create({
                 invoiceId,
@@ -165,19 +160,16 @@ module.exports = {
                 data: { invoiceId: invoice.id, tableId: invoice.tableId }
             });
 
-            // Gửi tín hiệu WebSocket trực tiếp để khách hàng tại trang Invoice/PaymentWaiting chuyển trang
             socketHandler.sendPaymentNotification(invoice.id, invoice.tableId, "PAID");
             
-            // Cập nhật trạng thái bàn real-time
             socketHandler.sendTableStatusUpdate(invoice.tableId, "AVAILABLE");
         }
         return payment;
     },
 
-    // Xử lý tạo thanh toán chung
     ProcessPayment: async function (invoiceId, method, amount) {
         if (!invoiceId || !method || !amount) {
-            throw new Error("Missing required fields");
+            throw new Error("Thiếu thông tin cần thiết");
         }
 
         return await Payment.create({
@@ -188,7 +180,6 @@ module.exports = {
         });
     },
 
-    // Lấy tất cả thanh toán (giữ lại cho Admin nếu cần)
     GetAllPayments: async function () {
         return await Payment.findAll();
     }

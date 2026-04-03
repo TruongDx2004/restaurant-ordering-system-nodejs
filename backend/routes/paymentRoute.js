@@ -58,10 +58,10 @@ router.post("/momo", checkLogin, async function (req, res, next) {
     }
 });
 
-// MoMo IPN Callback (Public - gọi từ server MoMo)
+//POST api/momo-ipn
 router.post("/momo-ipn", async function (req, res, next) {
     try {
-        await paymentController.HandleMoMoIPN(req.body);
+        await paymentController.HandleMoMoIPN(req.body.orderId, req.body.resultCode, req.body.transId);
         return res.status(204).send();
     } catch (err) {
         console.error("MoMo IPN Error:", err);

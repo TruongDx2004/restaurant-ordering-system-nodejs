@@ -1,6 +1,6 @@
 const Dish = require("../schemas/dishSchema");
 const Category = require("../schemas/categorySchema");
-const sequelize = require("../config/db");
+const { Op } = require("sequelize");
 
 // ===== MAPPER =====
 const toResponse = (dish) => ({
@@ -92,7 +92,7 @@ module.exports = {
     return await Dish.findAll({
       where: {
         name: {
-          [sequelize.Op.like]: `%${name}%`
+          [Op.like]: `%${name}%`
         }
       },
       include: [{ model: Category, as: "category" }]

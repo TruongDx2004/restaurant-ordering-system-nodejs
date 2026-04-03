@@ -3,7 +3,6 @@ const { Op } = require("sequelize");
 const sequelize = require("../config/db");
 const webSocketService = require("../utils/socketHandler");
 
-// ===== MAPPER =====
 const toResponse = (invoice) => ({
     id: invoice.id,
     table: invoice.table
@@ -42,7 +41,6 @@ const toResponse = (invoice) => ({
 
 module.exports = {
 
-    // ===== BASIC =====
     CreateInvoice: async function (data) {
         return await Invoice.create(data);
     },
@@ -63,7 +61,7 @@ module.exports = {
             ]
         });
 
-        if (!invoice) throw new Error("Invoice not found");
+        if (!invoice) throw new Error("Không tìm thấy hóa đơn");
         return invoice;
     },
 
@@ -86,19 +84,18 @@ module.exports = {
 
     UpdateInvoice: async function (id, data) {
         const invoice = await Invoice.findByPk(id);
-        if (!invoice) throw new Error("Invoice not found");
+        if (!invoice) throw new Error("Không tìm thấy hóa đơn");
 
         return await invoice.update(data);
     },
 
     DeleteInvoice: async function (id) {
         const invoice = await Invoice.findByPk(id);
-        if (!invoice) throw new Error("Invoice not found");
+        if (!invoice) throw new Error("Không tìm thấy hóa đơn");
 
         return await invoice.destroy();
     },
 
-    // ===== FILTER =====
     GetInvoicesByStatus: async function (status) {
         return await Invoice.findAll({ where: { status } });
     },
@@ -117,26 +114,24 @@ module.exports = {
         });
     },
 
-    // ===== STATUS =====
     UpdateInvoiceStatus: async function (id, status) {
         if (!status) throw new Error("Status is required");
 
         status = status.toUpperCase().trim();
         const allowed = ["OPEN", "PAID", "CANCELLED"];
-        if (!allowed.includes(status)) throw new Error("Invalid status");
+        if (!allowed.includes(status)) throw new Error("Trang thái không hợp lệ");
 
         const t = await sequelize.transaction();
 
         try {
             const invoice = await Invoice.findByPk(id, { transaction: t });
-            if (!invoice) throw new Error("Invoice not found");
+            if (!invoice) throw new Error("Không tìm thấy hóa đơn");
 
             await invoice.update({
                 status,
                 paidAt: status === "PAID" ? new Date() : null
             }, { transaction: t });
 
-            // ===== UPDATE TABLE =====
             if (status === "PAID" || status === "CANCELLED") {
                 await Table.update(
                     { status: "AVAILABLE" },
@@ -146,7 +141,6 @@ module.exports = {
 
             await t.commit();
 
-            // ===== SOCKET =====
             if (status === "PAID") {
                 webSocketService.sendPaymentNotification(invoice.id, invoice.tableId, "PAID");
             }
@@ -195,12 +189,12 @@ module.exports = {
                 });
 
                 if (!invoice) {
-                    throw new Error("Table occupied but no active invoice");
+                    throw new Error("Bàn đang bận nhưng không tìm thấy hóa đơn mở");
                 }
             }
 
             else {
-                throw new Error("Table not available");
+                throw new Error("Bàn không khả dụng để tạo hóa đơn");
             }
 
             let totalAmount = Number(invoice.totalAmount || 0);

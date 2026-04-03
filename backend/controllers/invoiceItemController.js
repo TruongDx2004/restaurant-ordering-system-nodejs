@@ -35,12 +35,11 @@ const toResponse = (item) => ({
 
 module.exports = {
 
-  // ===== CREATE =====
   CreateInvoiceItem: async function (data) {
     const { quantity, unitPrice } = data;
 
     if (!quantity || quantity <= 0) {
-      throw new Error("Quantity must be > 0");
+      throw new Error("Số lượng phải lớn hơn 0");
     }
 
     const totalPrice = unitPrice * quantity;
@@ -51,7 +50,6 @@ module.exports = {
     });
   },
 
-  // ===== GET =====
   GetInvoiceItemById: async function (id) {
     const item = await InvoiceItem.findByPk(id, {
       include: [{
@@ -61,7 +59,7 @@ module.exports = {
       }]
     });
 
-    if (!item) throw new Error("Invoice item not found");
+    if (!item) throw new Error("Không tìm thấy mục hóa đơn");
     return item;
   },
 
@@ -100,7 +98,7 @@ module.exports = {
   // ===== UPDATE =====
   UpdateInvoiceItem: async function (id, data) {
     const item = await InvoiceItem.findByPk(id);
-    if (!item) throw new Error("Invoice item not found");
+    if (!item) throw new Error("Không tìm thấy mục hóa đơn");
 
     const { quantity, unitPrice } = data;
 
@@ -114,11 +112,11 @@ module.exports = {
 
   UpdateQuantity: async function (id, quantity) {
     if (!quantity || quantity <= 0) {
-      throw new Error("Quantity must be > 0");
+      throw new Error("Số lượng phải lớn hơn 0");
     }
 
     const item = await InvoiceItem.findByPk(id);
-    if (!item) throw new Error("Invoice item not found");
+    if (!item) throw new Error("Không tìm thấy mục hóa đơn");
 
     const totalPrice = item.unitPrice * quantity;
 
@@ -128,7 +126,7 @@ module.exports = {
   // ===== DELETE =====
   DeleteInvoiceItem: async function (id) {
     const item = await InvoiceItem.findByPk(id);
-    if (!item) throw new Error("Invoice item not found");
+    if (!item) throw new Error("Không tìm thấy mục hóa đơn");
 
     return await item.destroy();
   },
@@ -136,14 +134,14 @@ module.exports = {
   // ===== ADD ITEM =====
   AddItemToInvoice: async function (invoiceId, dishId, quantity) {
     if (!quantity || quantity <= 0) {
-      throw new Error("Quantity must be > 0");
+      throw new Error("Số lượng phải lớn hơn 0");
     }
 
     const dish = await Dish.findByPk(dishId);
     const invoice = await Invoice.findByPk(invoiceId);
 
-    if (!dish) throw new Error("Dish not found");
-    if (!invoice) throw new Error("Invoice not found");
+    if (!dish) throw new Error("Không tìm thấy món ăn");
+    if (!invoice) throw new Error("Không tìm thấy hóa đơn");
 
     const unitPrice = dish.price;
     const totalPrice = unitPrice * quantity;
@@ -180,21 +178,20 @@ module.exports = {
         transaction: t
       });
 
-      if (!item) throw new Error("Invoice item not found");
+      if (!item) throw new Error("Không tìm thấy mục hóa đơn");
 
       if (item.status === "SERVED") {
-        throw new Error("Cannot update served item");
+        throw new Error("Không thể cập nhật mục đã phục vụ");
       }
 
       if (item.status === "CANCELLED") {
-        throw new Error("Cannot update cancelled item");
+        throw new Error("Không thể cập nhật mục đã hủy");
       }
 
       const oldStatus = item.status;
 
       await item.update({ status }, { transaction: t });
 
-      // update invoice total nếu cancel
       if (status === "CANCELLED" && oldStatus !== "CANCELLED") {
         const invoice = item.Invoice;
 

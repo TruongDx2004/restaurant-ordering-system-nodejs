@@ -19,13 +19,13 @@ module.exports = {
 
     GetAnUserById: async function (id) {
         const user = await User.findByPk(id);
-        if (!user) throw new Error("id not found");
+        if (!user) throw new Error("Khong tìm thấy người dùng");
         return user;
     },
 
     UpdateAnUser: async function (id, data) {
         const user = await User.findByPk(id);
-        if (!user) throw new Error("id not found");
+        if (!user) throw new Error("Khong tìm thấy người dùng");
 
         if (data.password) {
             data.password = await bcrypt.hash(data.password, 10);
@@ -36,10 +36,7 @@ module.exports = {
 
     DeleteAnUser: async function (id) {
         const user = await User.findByPk(id);
-        if (!user) throw new Error("id not found");
-        // Trong ví dụ của bạn là soft delete (isDeleted: true), 
-        // nhưng schema hiện tại không có isDeleted nên tôi dùng destroy()
-        // Hoặc nếu bạn muốn soft delete, hãy thêm isDeleted vào schema.
+        if (!user) throw new Error("Khong tìm thấy người dùng");
         return await user.destroy();
     }
 };

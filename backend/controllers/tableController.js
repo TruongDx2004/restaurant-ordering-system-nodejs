@@ -12,20 +12,20 @@ module.exports = {
 
   GetTableById: async function (id) {
     const table = await Table.findByPk(id);
-    if (!table) throw new Error("Table not found");
+    if (!table) throw new Error("Không tìm thấy bàn");
     return table;
   },
 
   UpdateTable: async function (id, data) {
     const table = await Table.findByPk(id);
-    if (!table) throw new Error("Table not found");
+    if (!table) throw new Error("Không tìm thấy bàn");
 
     return await table.update(data);
   },
 
   DeleteTable: async function (id) {
     const table = await Table.findByPk(id);
-    if (!table) throw new Error("Table not found");
+    if (!table) throw new Error("Không tìm thấy bàn");
 
     return await table.destroy();
   },
@@ -44,7 +44,7 @@ module.exports = {
 
   UpdateTableStatus: async function (id, status) {
     const table = await Table.findByPk(id);
-    if (!table) throw new Error("Table not found");
+    if (!table) throw new Error("Không tìm thấy bàn");
 
     return await table.update({ status });
   },

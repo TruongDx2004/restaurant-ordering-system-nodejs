@@ -11,25 +11,25 @@ module.exports = {
 
   GetCategoryById: async function (id) {
     const category = await Category.findByPk(id);
-    if (!category) throw new Error("id not found");
+    if (!category) throw new Error("Không tìm thấy danh mục");
     return category;
   },
 
   GetCategoryByName: async function (name) {
     const category = await Category.findOne({ where: { name } });
-    if (!category) throw new Error("name not found");
+    if (!category) throw new Error("Không tìm thấy danh mục");
     return category;
   },
 
   UpdateCategory: async function (id, data) {
     const category = await Category.findByPk(id);
-    if (!category) throw new Error("id not found");
+    if (!category) throw new Error("Không tìm thấy danh mục");
     return await category.update(data);
   },
 
   DeleteCategory: async function (id) {
     const category = await Category.findByPk(id);
-    if (!category) throw new Error("id not found");
+    if (!category) throw new Error("Không tìm thấy danh mục");
     return await category.destroy();
   }
 };

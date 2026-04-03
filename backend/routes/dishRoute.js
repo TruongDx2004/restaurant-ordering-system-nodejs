@@ -7,7 +7,7 @@ const { validate, dishValidator } = require("../utils/validateHandler");
 const responseHandler = require("../utils/responseHandler");
 const upload = require("../utils/upload");
 
-// ===== ADMIN =====
+//POST api/dishes
 router.post("/", checkLogin, checkRole("ADMIN"), upload.single("image"), dishValidator.create, validate, async function (req, res, next) {
   try {
     const dish = await dishController.CreateDish(req.body, req.file);
@@ -17,6 +17,7 @@ router.post("/", checkLogin, checkRole("ADMIN"), upload.single("image"), dishVal
   }
 });
 
+//PUT api/dishes/:id
 router.put("/:id", checkLogin, checkRole("ADMIN"), upload.single("image"), dishValidator.update, validate, async function (req, res, next) {
   try {
     const dish = await dishController.UpdateDish(req.params.id, req.body, req.file);
@@ -26,6 +27,7 @@ router.put("/:id", checkLogin, checkRole("ADMIN"), upload.single("image"), dishV
   }
 });
 
+//DELETE api/dishes/:id
 router.delete("/:id", checkLogin, checkRole("ADMIN"), dishValidator.delete, validate, async function (req, res, next) {
   try {
     await dishController.DeleteDish(req.params.id);
@@ -35,6 +37,7 @@ router.delete("/:id", checkLogin, checkRole("ADMIN"), dishValidator.delete, vali
   }
 });
 
+//PATCH api/dishes/:id/status
 router.patch("/:id/status", checkLogin, checkRole("ADMIN"), dishValidator.updateStatus, validate, async function (req, res, next) {
   try {
     const dish = await dishController.UpdateDishStatus(req.params.id, req.query.status);
@@ -44,7 +47,7 @@ router.patch("/:id/status", checkLogin, checkRole("ADMIN"), dishValidator.update
   }
 });
 
-// ===== PUBLIC =====
+//GET api/dishes
 router.get("/", async function (req, res, next) {
   try {
     const dishes = await dishController.GetAllDishes();
@@ -54,6 +57,7 @@ router.get("/", async function (req, res, next) {
   }
 });
 
+//GET api/dishes/status/:status
 router.get("/status/:status", async function (req, res, next) {
   try {
     const dishes = await dishController.GetDishesByStatus(req.params.status);
@@ -63,6 +67,7 @@ router.get("/status/:status", async function (req, res, next) {
   }
 });
 
+//GET api/dishes/category/:categoryId
 router.get("/category/:categoryId", async function (req, res, next) {
   try {
     const dishes = await dishController.GetDishesByCategory(req.params.categoryId);
@@ -72,6 +77,7 @@ router.get("/category/:categoryId", async function (req, res, next) {
   }
 });
 
+//GET api/dishes/search?name=
 router.get("/search", async function (req, res, next) {
   try {
     const dishes = await dishController.SearchDishesByName(req.query.name);
@@ -81,6 +87,7 @@ router.get("/search", async function (req, res, next) {
   }
 });
 
+//GET api/dishes/:id
 router.get("/:id", async function (req, res, next) {
   try {
     const dish = await dishController.GetDishById(req.params.id);
