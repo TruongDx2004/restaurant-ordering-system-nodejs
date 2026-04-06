@@ -1,0 +1,170 @@
+/* OrderItem Component Styles */
+
+.orderItem {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  display: flex;
+  gap: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.orderItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Item Image */
+.itemImage {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.itemImage img {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.quantityBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Item Details */
+.itemDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.itemName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.itemPrice {
+  font-size: 16px;
+  font-weight: 700;
+  color: #667eea;
+  white-space: nowrap;
+}
+
+.itemInfo {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.unitPrice {
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+/* Item Status */
+.itemStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+  transition: all 0.3s ease;
+}
+
+.statusPending {
+  background: rgba(243, 156, 18, 0.1);
+  color: #f39c12;
+}
+
+.statusPreparing {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.statusReady {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27ae60;
+}
+
+.statusServed {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.statusCancelled {
+  background: rgba(149, 165, 166, 0.1);
+  color: #95a5a6;
+}
+
+/* Status update animation */
+.itemStatus.statusUpdated {
+  animation: pulse 1s ease;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .orderItem {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .itemImage img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .itemName {
+    font-size: 15px;
+  }
+
+  .itemPrice {
+    font-size: 15px;
+  }
+}

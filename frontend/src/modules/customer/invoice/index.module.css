@@ -1,0 +1,384 @@
+/* Invoice Page Styles */
+
+/* Container */
+.invoiceContainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 100px;
+  min-height: 100vh;
+}
+
+/* Invoice Header */
+.invoiceHeader {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.headerTop h1 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.backBtn,
+.printBtn {
+  background: transparent;
+  border: 2px solid #667eea;
+  color: #667eea;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.backBtn:hover,
+.printBtn:hover {
+  background: #667eea;
+  color: white;
+}
+
+.invoiceInfo {
+  display: grid;
+  gap: 12px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.open {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.status.paid {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27ae60;
+}
+
+.status.cancelled {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+/* Paid Message */
+.paidMessage {
+  background: linear-gradient(135deg, #27ae6020, #2ecc7120);
+  border: 2px solid #27ae60;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.paidMessage i {
+  font-size: 60px;
+  color: #27ae60;
+  margin-bottom: 15px;
+}
+
+.paidMessage h3 {
+  font-size: 20px;
+  color: #27ae60;
+  margin: 0 0 10px 0;
+}
+
+.paidMessage p {
+  color: #2c3e50;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.paidTime {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-top: 10px;
+}
+
+/* Empty State */
+.emptyState {
+  background: white;
+  border-radius: 15px;
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.emptyIcon {
+  font-size: 80px;
+  color: #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.emptyState h3 {
+  font-size: 20px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.emptyState p {
+  color: #7f8c8d;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.browseMenuBtn {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.browseMenuBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading State */
+.loading {
+  background: white;
+  border-radius: 15px;
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.loading i {
+  font-size: 48px;
+  color: #667eea;
+  margin-bottom: 20px;
+}
+
+.loading p {
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+/* Error State */
+.error {
+  background: white;
+  border-radius: 15px;
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.error i {
+  font-size: 60px;
+  color: #e74c3c;
+  margin-bottom: 20px;
+}
+
+.error h3 {
+  font-size: 20px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.error p {
+  color: #7f8c8d;
+  margin-bottom: 25px;
+}
+
+.retryBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.retryBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 250px;
+  max-width: 350px;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toastSuccess {
+  border-left: 4px solid #27ae60;
+  color: #27ae60;
+}
+
+.toastError {
+  border-left: 4px solid #e74c3c;
+  color: #e74c3c;
+}
+
+.toastInfo {
+  border-left: 4px solid #3498db;
+  color: #3498db;
+}
+
+.toastWarning {
+  border-left: 4px solid #f39c12;
+  color: #f39c12;
+}
+
+/* Mobile Only */
+@media (max-width: 768px) {
+  .invoiceContainer {
+    padding: 15px;
+    padding-bottom: 80px;
+  }
+
+  .invoiceHeader {
+    padding: 15px;
+  }
+
+  .headerTop h1 {
+    font-size: 20px;
+  }
+
+  .backBtn,
+  .printBtn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .infoRow {
+    font-size: 13px;
+  }
+
+  .paidMessage {
+    padding: 20px;
+  }
+
+  .paidMessage i {
+    font-size: 48px;
+  }
+
+  .paidMessage h3 {
+    font-size: 18px;
+  }
+
+  .emptyState,
+  .loading,
+  .error {
+    padding: 40px 20px;
+  }
+
+  .emptyIcon {
+    font-size: 60px;
+  }
+
+  .toast {
+    right: 10px;
+    left: 10px;
+    max-width: 100%;
+  }
+}
+
+/* Desktop - Show warning and hide content */
+@media (min-width: 769px) {
+  .desktopWarning {
+    display: flex !important;
+  }
+
+  .invoiceContainer {
+    display: none !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .invoiceContainer {
+    padding: 20px;
+  }
+
+  .backBtn,
+  .printBtn,
+  .toast {
+    display: none !important;
+  }
+
+  .invoiceHeader {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .paidMessage {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+  }
+}

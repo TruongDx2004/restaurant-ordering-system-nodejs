@@ -1,0 +1,71 @@
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+
+const corsConfig = require("./utils/corsHandler");
+
+var indexRouter = require('./routes/index');
+var authRouter = require("./routes/authRoute");
+var userRouter = require("./routes/userRoute");
+var tableRouter = require("./routes/tableRoute");
+var categoryRouter = require("./routes/categoryRoute");
+var dishRouter = require("./routes/dishRoute");
+var messageRouter = require("./routes/messageRoute");
+var customerRouter = require("./routes/customerRoute");
+var invoiceRouter = require("./routes/invoiceRoute");
+var invoiceItemRouter = require("./routes/invoiceItemRoute");
+var paymentRoutes = require("./routes/paymentRoute");
+var notificationRoutes = require("./routes/notificationRoute");
+var excelRouter = require("./routes/excelRoute");
+
+var app = express();
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+app.use(corsConfig);
+
+app.use(logger('dev'));
+app.use(express.json({
+  strict: false
+}));
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/', indexRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
+app.use("/api/tables", tableRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/dishes", dishRouter);
+app.use("/api/messages", messageRouter);
+app.use("/api/customers", customerRouter);
+app.use("/api/invoices",invoiceRouter);
+app.use("/api/invoice-items",invoiceItemRouter);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/excel", excelRouter);
+
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  next(createError(404));
+});
+
+// error handler
+app.use(function (err, req, res, next) {
+
+  console.error(err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error"
+  });
+
+});
+
+module.exports = app;

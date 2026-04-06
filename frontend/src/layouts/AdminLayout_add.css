@@ -1,0 +1,36 @@
+/**
+ * Professional Admin Layout Styles
+ */
+
+/* Add to AdminLayout.module.css */
+
+.iconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.sidebarBadge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #1e293b;
+  padding: 0 3px;
+}
+
+.closed .sidebarBadge {
+  right: -12px;
+}
