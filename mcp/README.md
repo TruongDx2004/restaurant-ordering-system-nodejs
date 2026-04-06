@@ -34,8 +34,7 @@ python mcp_pipe.py
 Sử dụng `mcp_pipe.py` nếu bạn cần kết nối qua WebSocket hoặc cấu hình trực tiếp đường dẫn `restaurant_mcp.py` vào file config của client.
 
 ## 📁 Cấu trúc tệp tin
-*   `restaurant_mcp.py`: Mã nguồn chính của MCP Server (đã tối ưu hóa).
-*   `mcp_config.json`: Cấu hình danh sách các MCP Server.
+*   `restaurant_mcp.py`: Mã nguồn chính của MCP Server.
 *   `mcp_pipe.py`: Cầu nối (Bridge) giữa Stdio và WebSocket.
 *   `requirements.txt`: Danh sách các thư viện Python cần thiết.
 

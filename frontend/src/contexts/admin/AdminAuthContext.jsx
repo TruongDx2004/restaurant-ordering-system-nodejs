@@ -50,7 +50,7 @@ export const AdminAuthProvider = ({ children }) => {
         setUser(userData);
 
         // Save to localStorage
-        localStorage.setItem('token', accessToken);
+        localStorage.setItem('adminToken', accessToken);
         localStorage.setItem('adminRefreshToken', refToken);
         localStorage.setItem('adminUser', JSON.stringify(userData));
 

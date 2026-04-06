@@ -13,7 +13,7 @@ const toResponse = (invoice) => ({
             status: invoice.table.status,
             isActive: invoice.table.isActive
         }
-        : null,
+        : invoice.tableId ? { id: invoice.tableId } : null,
     totalAmount: Number(invoice.totalAmount),
     status: invoice.status,
     createdAt: invoice.createdAt,
@@ -115,7 +115,7 @@ module.exports = {
     },
 
     UpdateInvoiceStatus: async function (id, status) {
-        if (!status) throw new Error("Status is required");
+        if (!status) throw new Error("Thiếu thông tin trạng thái");
 
         status = status.toUpperCase().trim();
         const allowed = ["OPEN", "PAID", "CANCELLED"];
@@ -159,13 +159,13 @@ module.exports = {
         const t = await sequelize.transaction();
 
         try {
-            if (!tableId) throw new Error("TableId is required");
+            if (!tableId) throw new Error("Thiếu thông tin bàn");
             if (!items || !Array.isArray(items) || items.length === 0) {
-                throw new Error("Items must not be empty");
+                throw new Error("Thiếu thông tin món ăn");
             }
 
             const table = await Table.findByPk(tableId, { transaction: t });
-            if (!table) throw new Error("Table not found");
+            if (!table) throw new Error("Bàn không tồn tại");
 
             let invoice;
 
@@ -203,12 +203,16 @@ module.exports = {
 
                 const quantity = Number(item.quantity);
                 if (!quantity || quantity <= 0) {
-                    throw new Error(`Invalid quantity for dish ${item.dishId}`);
+                    throw new Error(`Số lượng không hợp lệ cho món ${item.dishId}`);
                 }
 
                 const dish = await Dish.findByPk(item.dishId, { transaction: t });
                 if (!dish) {
-                    throw new Error(`Dish not found: ${item.dishId}`);
+                    throw new Error(`Món ăn không tồn tại: ${item.dishId}`);
+                }
+
+                if (dish.status !== "AVAILABLE") {
+                    throw new Error(`Món ${dish.name} đã hết, vui lòng chọn món khác!`);
                 }
 
                 const unitPrice = Number(dish.price);
@@ -262,6 +266,7 @@ module.exports = {
             await t.commit();
 
             webSocketService.sendNewOrderNotification(invoice.id, invoice.tableId);
+            webSocketService.sendTableStatusUpdate(invoice.tableId, "OCCUPIED");
             
             return await this.GetInvoiceById(invoice.id);
 

@@ -14,8 +14,7 @@ export const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(null);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -46,10 +45,9 @@ export const Cart = () => {
   };
 
   // Show toast notification
-  const showNotification = (message) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+  const showNotification = (message, type = 'info') => {
+    setShowToast({ message, type });
+    setTimeout(() => setShowToast(null), 3000);
   };
 
   // Calculate totals
@@ -86,7 +84,7 @@ export const Cart = () => {
     }
 
     if (newQuantity > 99) {
-      showNotification('Số lượng tối đa là 99');
+      showNotification('Số lượng tối đa là 99', 'warning');
       return;
     }
 
@@ -95,28 +93,28 @@ export const Cart = () => {
     );
 
     saveCart(updatedItems);
-    showNotification('Đã cập nhật số lượng');
+    showNotification('Đã cập nhật số lượng', 'success');
   };
 
   // Remove item
   const removeItem = (itemId) => {
     const updatedItems = cartItems.filter(item => item.id !== itemId);
     saveCart(updatedItems);
-    showNotification('Đã xóa món khỏi giỏ hàng');
+    showNotification('Đã xóa món khỏi giỏ hàng', 'info');
   };
 
   // Clear cart
   const clearCart = () => {
     if (window.confirm('Bạn có chắc muốn xóa tất cả món trong giỏ hàng?')) {
       saveCart([]);
-      showNotification('Đã xóa tất cả món');
+      showNotification('Đã xóa tất cả món', 'info');
     }
   };
 
   // Handle checkout
   const handleCheckout = () => {
     if (cartItems.length === 0) {
-      showNotification('Giỏ hàng trống');
+      showNotification('Giỏ hàng trống', 'warning');
       return;
     }
     setShowModal(true);
@@ -146,7 +144,7 @@ export const Cart = () => {
         // Clear cart on success
         saveCart([]);
         setShowModal(false);
-        showNotification('Đặt món thành công!');
+        showNotification('Đặt món thành công!', 'success');
 
         setTimeout(() => {
           navigate('/customer/orders');
@@ -157,7 +155,7 @@ export const Cart = () => {
     } catch (error) {
       console.error('Error creating order:', error);
       setShowModal(false);
-      showNotification('Đặt món thất bại. Vui lòng thử lại.');
+      showNotification(error.message || 'Đặt món thất bại. Vui lòng thử lại.', 'error');
     }
   };
 
@@ -326,9 +324,8 @@ export const Cart = () => {
 
         {/* Toast Notification */}
         {showToast && (
-          <div className={styles.toast}>
-            <i className="fas fa-check-circle"></i>
-            <span>{toastMessage}</span>
+          <div className={`${styles.toast} ${styles[`toast${showToast.type.charAt(0).toUpperCase() + showToast.type.slice(1)}`]}`}>
+            {showToast.message}
           </div>
         )}
       </div>

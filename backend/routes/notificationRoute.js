@@ -4,7 +4,7 @@ const notificationController = require("../controllers/notificationController");
 const { checkLogin } = require("../utils/authHandler");
 const responseHandler = require("../utils/responseHandler");
 
-// Lấy tất cả thông báo (ADMIN)
+//GET api/notifications
 router.get("/", checkLogin, async function (req, res, next) {
     try {
         const notifications = await notificationController.GetAllNotifications();
@@ -14,10 +14,10 @@ router.get("/", checkLogin, async function (req, res, next) {
     }
 });
 
-// Lấy thông báo theo người nhận (Dùng req.query thay vì params để khớp frontend call)
+//GET api/notifications/recipient/ordered?recipientType=USER&recipientId=123
 router.get("/recipient/ordered", checkLogin, async function (req, res, next) {
     try {
-        const { recipientType, recipientId } = req.query;
+        const { recipientType = "ALL", recipientId = null } = req.query;
         const notifications = await notificationController.GetByRecipient(recipientType, recipientId);
         return responseHandler.success(res, notifications, "Lấy thông báo thành công");
     } catch (err) {
@@ -25,10 +25,10 @@ router.get("/recipient/ordered", checkLogin, async function (req, res, next) {
     }
 });
 
-// Đếm số thông báo chưa đọc
+//GET api/notifications/recipient/unread-count?recipientType=USER&recipientId=123
 router.get("/recipient/unread-count", checkLogin, async function (req, res, next) {
     try {
-        const { recipientType, recipientId } = req.query;
+        const { recipientType = "ALL", recipientId = null } = req.query;
         const count = await notificationController.GetUnreadCount(recipientType, recipientId);
         return responseHandler.success(res, count, "Đếm thông báo thành công");
     } catch (err) {
@@ -36,7 +36,7 @@ router.get("/recipient/unread-count", checkLogin, async function (req, res, next
     }
 });
 
-// Đánh dấu một thông báo là đã đọc
+//PATCH api/notifications/:id/mark-read
 router.patch("/:id/mark-read", checkLogin, async function (req, res, next) {
     try {
         const updated = await notificationController.MarkAsRead(req.params.id);
@@ -46,12 +46,12 @@ router.patch("/:id/mark-read", checkLogin, async function (req, res, next) {
     }
 });
 
-// Đánh dấu tất cả là đã đọc
+//PATCH api/notifications/recipient/mark-all-read
 router.patch("/recipient/mark-all-read", checkLogin, async function (req, res, next) {
     try {
-        const { recipientType, recipientId } = req.body; // Frontend gửi qua Body trong PATCH call
-        await notificationController.MarkAllAsRead(recipientType, recipientId);
-        return responseHandler.success(res, null, "Tất cả thông báo đã được đánh dấu đọc");
+        const { recipientType = "ALL", recipientId = null } = req.body;
+        const updated = await notificationController.MarkAllAsRead(recipientType, recipientId);
+        return responseHandler.success(res, updated, "Tất cả thông báo đã được đánh dấu đọc");
     } catch (err) {
         return responseHandler.error(res, err.message, 400);
     }

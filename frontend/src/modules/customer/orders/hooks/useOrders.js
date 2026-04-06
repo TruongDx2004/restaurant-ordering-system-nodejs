@@ -27,14 +27,11 @@ export const useOrders = (tableNumber = null, autoRefreshInterval = 30000) => {
       setLoading(true);
       setError(null);
 
-      console.log(`📦 Fetching orders for table number: ${tableNumber}`);
-
       // Get active invoice for table by table number
       const response = await invoiceApi.getActiveInvoiceByTableNumber(tableNumber);
 
       if (response.success && response.data) {
         const invoiceData = response.data;
-        console.log(`✅ Active invoice found:`, invoiceData);
 
         setInvoice(invoiceData);
 
@@ -60,10 +57,8 @@ export const useOrders = (tableNumber = null, autoRefreshInterval = 30000) => {
         storage.setItem('currentInvoice', invoiceData);
         storage.setItem('currentInvoiceItems', itemsData);
 
-        console.log(`✅ Loaded ${itemsData.length} items`);
       } else {
         // No active invoice
-        console.log(`ℹ️ No active invoice for table ${tableNumber}`);
         setInvoice(null);
         setItems([]);
         storage.removeItem('currentInvoice');

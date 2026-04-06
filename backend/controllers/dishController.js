@@ -14,7 +14,7 @@ const toResponse = (dish) => ({
       id: dish.category.id,
       name: dish.category.name
     }
-    : null
+    : dish.categoryId ? { id: dish.categoryId } : null,
 });
 
 const toEntity = (data, file, oldDish = null) => {

@@ -47,6 +47,7 @@ export const useMessages = (tableId, invoiceId) => {
     console.log(`[Socket] Subscribing to chat for table ${tableId}`);
     
     const unsubscribe = webSocketService.subscribe(`/topic/chat/${tableId}`, (message) => {
+      console.log(`[Socket] Received message for table ${tableId}:`, message);
       if (message.tableId === tableIdRef.current || message.tableId == tableIdRef.current) {
         fetchMessages();
       }

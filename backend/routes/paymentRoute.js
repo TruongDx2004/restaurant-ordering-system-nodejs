@@ -14,10 +14,10 @@ router.get("/", checkLogin, checkRole("ADMIN"), async function (req, res, next) 
     }
 });
 
-// Xử lý tạo thanh toán chung (Customer/Staff)
+//POST api/payments/process?invoiceId=123&method=MoMo&amount=100000
 router.post("/process", checkLogin, async function (req, res, next) {
     try {
-        const { invoiceId, method, amount } = req.query; // Giữ nguyên req.query như code cũ để tương thích frontend
+        const { invoiceId, method, amount } = req.query;
         const payment = await paymentController.ProcessPayment(invoiceId, method, amount);
         return responseHandler.success(res, payment, "Payment processed");
     } catch (err) {
@@ -25,7 +25,7 @@ router.post("/process", checkLogin, async function (req, res, next) {
     }
 });
 
-// Yêu cầu thanh toán tiền mặt (Customer)
+//POST api/payments/request-cash
 router.post("/request-cash", checkLogin, async function (req, res, next) {
     try {
         const { invoiceId, tableId, amount } = req.body;
@@ -36,7 +36,7 @@ router.post("/request-cash", checkLogin, async function (req, res, next) {
     }
 });
 
-// Xác nhận thanh toán theo hóa đơn (Staff/Admin)
+// PATCH api/payments/confirm-by-invoice
 router.patch("/confirm-by-invoice", checkLogin, async function (req, res, next) {
     try {
         const { invoiceId, transactionCode } = req.body;
@@ -47,7 +47,7 @@ router.patch("/confirm-by-invoice", checkLogin, async function (req, res, next) 
     }
 });
 
-// Tạo thanh toán qua MoMo (Customer)
+// POST api/payments/momo
 router.post("/momo", checkLogin, async function (req, res, next) {
     try {
         const { invoiceId, amount, orderInfo } = req.body;
@@ -58,11 +58,11 @@ router.post("/momo", checkLogin, async function (req, res, next) {
     }
 });
 
-//POST api/momo-ipn
+//POST api/payments/momo-ipn
 router.post("/momo-ipn", async function (req, res, next) {
     try {
         await paymentController.HandleMoMoIPN(req.body.orderId, req.body.resultCode, req.body.transId);
-        return res.status(204).send();
+        return res.status(200).send();
     } catch (err) {
         console.error("MoMo IPN Error:", err);
         return res.status(500).json({ error: err.message });

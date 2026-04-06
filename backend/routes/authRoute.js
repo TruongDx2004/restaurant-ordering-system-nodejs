@@ -4,17 +4,6 @@ const authController = require("../controllers/authController");
 const authHandler = require("../utils/authHandler");
 const responseHandler = require("../utils/responseHandler");
 
-//POST api/auth/register
-router.post("/register", async function (req, res, next) {
-    try {
-        const { email, password, name, phone } = req.body;
-        const newUser = await authController.Register(email, password, name, phone);
-        return responseHandler.success(res, { id: newUser.id }, "Đăng ký thành công");
-    } catch (err) {
-        return responseHandler.error(res, err.message, 400);
-    }
-});
-
 //POST api/auth/login
 router.post("/login", async function (req, res, next) {
     try {
@@ -45,10 +34,10 @@ router.post("/login", async function (req, res, next) {
 router.post("/refresh-token", async function (req, res, next) {
     try {
         const { refreshToken } = req.body;
-        if (!refreshToken) return responseHandler.error(res, "Refresh token is required", 400);
+        if (!refreshToken) return responseHandler.error(res, "Lỗi khi đăng nhập", 400);
 
         const user = await authController.GetUserByRefreshToken(refreshToken);
-        if (!user) return responseHandler.error(res, "Invalid refresh token", 403);
+        if (!user) return responseHandler.error(res, "Lỗi khi đăng nhập", 403);
 
         const newAccessToken = authHandler.generateAccessToken(user);
         return responseHandler.success(res, { accessToken: newAccessToken }, "Access token mới đã được tạo");

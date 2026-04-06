@@ -8,6 +8,7 @@ const NotificationItem = ({ notification, onMarkRead, onDelete }) => {
     const { showAlert } = useModal();
     const { id, title, message, isRead, createdAt, type, data } = notification;
     const [isProcessing, setIsProcessing] = useState(false);
+    const { showConfirm } = useModal();
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);

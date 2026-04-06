@@ -57,10 +57,9 @@ const TableManagement = () => {
   useEffect(() => {
     const unsubscribeItems = webSocketService.subscribe('/topic/table-status', (message) => {
       console.log('[Table Management] Received table status update:', message);
-      // Cập nhật trạng thái bàn trong state nếu có thay đổi
       setTables(prevTables =>
         prevTables.map(table =>
-          table.id === message.tableId ? { ...table, status: message.data.status } : table
+          table.id === message.tableId ? { ...table, status: message.status } : table
         )
       );
     });

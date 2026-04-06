@@ -95,7 +95,6 @@ module.exports = {
     });
   },
 
-  // ===== UPDATE =====
   UpdateInvoiceItem: async function (id, data) {
     const item = await InvoiceItem.findByPk(id);
     if (!item) throw new Error("Không tìm thấy mục hóa đơn");
@@ -123,7 +122,6 @@ module.exports = {
     return await item.update({ quantity, totalPrice });
   },
 
-  // ===== DELETE =====
   DeleteInvoiceItem: async function (id) {
     const item = await InvoiceItem.findByPk(id);
     if (!item) throw new Error("Không tìm thấy mục hóa đơn");
@@ -131,7 +129,6 @@ module.exports = {
     return await item.destroy();
   },
 
-  // ===== ADD ITEM =====
   AddItemToInvoice: async function (invoiceId, dishId, quantity) {
     if (!quantity || quantity <= 0) {
       throw new Error("Số lượng phải lớn hơn 0");
@@ -154,12 +151,11 @@ module.exports = {
       totalPrice
     });
 
-    // notify
     await notificationController.createAndSend({
       title: "Món mới được gọi",
       message: `Bàn ${invoice.tableId} gọi ${quantity}x ${dish.name}`,
       type: "NEW_ORDER",
-      recipientType: "ALL",
+      recipientType: "USER",
       data: { invoiceId, tableId: invoice.tableId }
     });
 
@@ -207,11 +203,7 @@ module.exports = {
 
       // websocket
       if (item.Invoice) {
-        webSocketService.sendInvoiceItemStatusUpdate(
-          item.Invoice.id,
-          item.id,
-          status
-        );
+        webSocketService.sendInvoiceItemStatusUpdate(item.Invoice.id, item.id, status);
       }
 
       return item;

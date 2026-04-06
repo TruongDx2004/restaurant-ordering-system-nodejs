@@ -29,7 +29,6 @@ export const useInvoicePayment = () => {
       const response = await paymentApi.processPayment(invoiceId, paymentMethod, amount);
 
       if (response.success && response.data) {
-        console.log(`✅ Payment processed successfully:`, response.data);
         setPaymentResult(response.data);
         return {
           success: true,
@@ -62,20 +61,15 @@ export const useInvoicePayment = () => {
       setIsProcessing(true);
       setError(null);
 
-      console.log(`💳 Initiating MoMo payment for invoice ${invoiceId}...`);
-
       const response = await paymentApi.createMoMoPayment({
         invoiceId,
         amount,
         orderInfo: `Thanh toán hóa đơn #${invoiceId}`
       });
 
-      // MoMo trả về nhiều URL: payUrl (web), deeplink (app), qrCodeUrl (ảnh QR)
-      // Ta ưu tiên sử dụng payUrl để MoMo tự động điều hướng phù hợp trên từng thiết bị
       const momoUrl = response.data?.payUrl;
 
       if (response.success && momoUrl) {
-        // Chuyển hướng đến trang thanh toán của MoMo
         window.location.href = momoUrl;
         return { success: true };
       } else {

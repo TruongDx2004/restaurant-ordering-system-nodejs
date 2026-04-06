@@ -13,7 +13,7 @@ module.exports = {
         return await Notification.findAll({
             where: {
                 [Op.or]: [
-                    { recipientType: "ALL" },
+                    { recipientType: "USER" },
                     {
                         [Op.and]: [
                             { recipientType },
@@ -31,7 +31,7 @@ module.exports = {
             where: {
                 isRead: false,
                 [Op.or]: [
-                    { recipientType: "ALL" },
+                    { recipientType: "USER" },
                     {
                         [Op.and]: [
                             { recipientType },
@@ -56,7 +56,7 @@ module.exports = {
                 where: {
                     isRead: false,
                     [Op.or]: [
-                        { recipientType: "ALL" },
+                        { recipientType: "USER" },
                         {
                             [Op.and]: [
                                 { recipientType },

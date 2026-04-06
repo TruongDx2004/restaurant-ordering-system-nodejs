@@ -1,13 +1,7 @@
 .tableManagement {
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* Fill mainContent height */
-  width: 100%; /* Fill mainContent width */
   padding: 24px;
   box-sizing: border-box;
-  overflow: hidden;
-  gap: 20px;
-  background: #f8fafc;
+  overflow-y: auto;
 }
 
 /* ==================== TOP BAR & SEARCH ==================== */

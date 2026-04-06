@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useModal } from '../contexts/ModalContext';
 import { useAdminAuth } from '../contexts/admin/AdminAuthContext';
 import { useNotifications } from '../components/shared/Notification';
 import styles from './EmployeeLayout.module.css';
@@ -12,6 +13,7 @@ import styles from './EmployeeLayout.module.css';
 const EmployeeLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { showConfirm } = useModal();
   const { user, logout } = useAdminAuth();
   const { unreadCount } = useNotifications('USER', user?.id);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -55,13 +57,6 @@ const EmployeeLayout = () => {
       label: 'Thông báo',
       shortLabel: 'T.Báo',
       badge: unreadCount
-    },
-    {
-      path: '/employee/kitchen',
-      icon: 'fa-utensils',
-      label: 'Bếp',
-      shortLabel: 'Bếp',
-      description: 'Theo dõi món đang làm'
     },
     {
       path: '/employee/inbox',

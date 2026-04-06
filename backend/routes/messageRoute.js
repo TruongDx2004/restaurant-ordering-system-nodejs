@@ -7,7 +7,7 @@ const responseHandler = require("../utils/responseHandler");
 //POST api/messages
 router.post("/", checkLogin, async function (req, res, next) {
     try {
-        const msg = await messageController.CreateMessage(req.body);
+        const msg = await messageController.CreateMessage();
         return responseHandler.success(res, msg, "Message sent successfully");
     } catch (err) {
         return responseHandler.error(res, err.message, 400);

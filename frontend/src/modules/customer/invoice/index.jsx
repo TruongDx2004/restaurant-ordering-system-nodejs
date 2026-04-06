@@ -175,7 +175,6 @@ const Invoice = () => {
     if (result.success) {
       showToast('Thanh toán thành công!', 'success');
 
-      // Redirect to success page after 2 seconds
       setTimeout(() => {
         navigate('/customer/payment-result', {
           state: {

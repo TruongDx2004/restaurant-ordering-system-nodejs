@@ -34,7 +34,7 @@ const Payment = sequelize.define(
 
     paidAt: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       field: "paid_at"
     },
 

@@ -14,12 +14,10 @@ const useNotifications = (recipientType, recipientId) => {
         setLoading(true);
         try {
             const response = await notificationApi.getByRecipient(recipientType, recipientId);
-            // SỬA LỖI: response ở đây chính là object { success, data, message } từ axios interceptor
             const data = response.data || [];
             setNotifications(data);
             
             const countResponse = await notificationApi.getUnreadCount(recipientType, recipientId);
-            // SỬA LỖI: tương tự cho unread count
             setUnreadCount(countResponse.data || 0);
         } catch (err) {
             console.error('Error fetching notifications:', err);

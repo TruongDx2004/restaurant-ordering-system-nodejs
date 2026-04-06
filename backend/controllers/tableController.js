@@ -20,6 +20,10 @@ module.exports = {
     const table = await Table.findByPk(id);
     if (!table) throw new Error("Không tìm thấy bàn");
 
+    if(table.status === "OCCUPIED") {
+      throw new Error("Bàn đang có khách, không thể cập nhật trạng thái OCCUPIED");
+    }
+
     return await table.update(data);
   },
 
@@ -45,7 +49,9 @@ module.exports = {
   UpdateTableStatus: async function (id, status) {
     const table = await Table.findByPk(id);
     if (!table) throw new Error("Không tìm thấy bàn");
-
+    if(table.status === "OCCUPIED") {
+      throw new Error("Bàn đang có khách, không thể cập nhật trạng thái OCCUPIED");
+    }
     return await table.update({ status });
   },
 

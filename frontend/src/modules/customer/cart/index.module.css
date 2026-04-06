@@ -563,35 +563,51 @@
 /* Toast Notification */
 .toast {
   position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #2E7D32;
-  color: white;
-  padding: 16px 24px;
-  border-radius: 12px;
+  top: 90px;
+  right: 20px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
-  animation: slideDown 0.3s ease-out, fadeOut 0.3s ease-out 2.7s forwards;
+  gap: 10px;
+  min-width: 250px;
+  max-width: 350px;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease;
 }
 
-@keyframes fadeOut {
-  to {
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
     opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
-.toast i {
-  font-size: 20px;
+.toastSuccess {
+  border-left: 4px solid #27ae60;
+  color: #27ae60;
 }
 
-.toast span {
-  font-weight: 500;
-  font-size: 15px;
+.toastError {
+  border-left: 4px solid #e74c3c;
+  color: #e74c3c;
+}
+
+.toastInfo {
+  border-left: 4px solid #3498db;
+  color: #3498db;
+}
+
+.toastWarning {
+  border-left: 4px solid #f39c12;
+  color: #f39c12;
 }
 
 /* Loading Skeleton */

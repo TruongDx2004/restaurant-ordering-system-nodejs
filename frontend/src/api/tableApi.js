@@ -91,7 +91,7 @@ const tableApi = {
 
   /**
    * Get tables by status
-   * @param {string} status - Table status (AVAILABLE, OCCUPIED, RESERVED, MAINTENANCE)
+   * @param {string} status - Table status (AVAILABLE, OCCUPIED, RESERVED)
    * @returns {Promise} Response with list of tables
    */
   getTablesByStatus: async (status) => {

@@ -1,6 +1,5 @@
 const Payment = require("../schemas/paymentSchema");
-const Invoice = require("../schemas/invoiceSchema");
-const Table = require("../schemas/tableSchema");
+const { Invoice, InvoiceItem, Table } = require("../schemas");
 const notificationController = require("./notificationController");
 const socketHandler = require("../utils/socketHandler");
 const momoConfig = require("../config/momo");
@@ -11,6 +10,23 @@ module.exports = {
     CreateMoMoPayment: async function (invoiceId, amount, orderInfo) {
         if (!invoiceId || !amount) {
             throw new Error("Thiếu thông tin bắt buộc");
+        }
+
+        const invoice = await Invoice.findByPk(invoiceId, {
+            include: [{
+                model: InvoiceItem,
+                as: "items"
+            }]
+        });
+        if (invoice.items.some(item => item.status !== "SERVED" && item.status !== "CANCELLED")) {
+            throw new Error("Không thể thanh toán khi còn món chưa được phục vụ");
+        }
+
+        const existingPayment = await Payment.findOne({ where: { invoiceId } });
+        if (existingPayment && existingPayment.status === "SUCCESS") {
+            throw new Error("Hóa đơn đã được thanh toán thành công trước đó");
+        } else if (existingPayment) {
+            throw new Error("Đã có một yêu cầu thanh toán đang chờ xử lý cho hóa đơn này");
         }
 
         const accessKey = 'F8BBA842ECF85';
@@ -92,7 +108,7 @@ module.exports = {
                         recipientType: "ALL",
                         data: { invoiceId: invoice.id, tableId: invoice.tableId, method: "MOMO" }
                     });
-                    
+                    socketHandler.sendTableStatusUpdate(invoice.tableId, "AVAILABLE");
                     socketHandler.sendPaymentNotification(invoice.id, invoice.tableId, "PAID");
                 }
             } else {
@@ -106,11 +122,31 @@ module.exports = {
             throw new Error("Missing required fields");
         }
 
+        const invoice = await Invoice.findByPk(invoiceId, {
+            include: [{
+                model: InvoiceItem,
+                as: "items"
+            }]
+        });
+
+        if (!invoice) {
+            throw new Error("Không tìm thấy hóa đơn");
+        }
+
+        if (invoice.items.some(item => item.status !== "SERVED" && item.status !== "CANCELLED")) {
+            throw new Error("Không thể yêu cầu thanh toán khi còn món chưa được phục vụ");
+        }
+
+        const existingPayment = await Payment.findOne({ where: { invoiceId } });
+        if (existingPayment && existingPayment.status === "SUCCESS") {
+            throw new Error("Hóa đơn đã được thanh toán thành công trước đó");
+        }
+
         await notificationController.createAndSend({
             title: "Yêu cầu thanh toán tiền mặt",
             message: `Bàn ${tableId} yêu cầu thanh toán ${parseInt(amount).toLocaleString('vi-VN')} VND.`,
             type: "CASH_PAYMENT_REQUEST",
-            recipientType: "ALL",
+            recipientType: "USER",
             data: {
                 invoiceId,
                 tableId,
@@ -161,7 +197,6 @@ module.exports = {
             });
 
             socketHandler.sendPaymentNotification(invoice.id, invoice.tableId, "PAID");
-            
             socketHandler.sendTableStatusUpdate(invoice.tableId, "AVAILABLE");
         }
         return payment;

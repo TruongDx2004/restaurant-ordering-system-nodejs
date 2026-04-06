@@ -52,7 +52,6 @@ export const useOrderStatus = (items = []) => {
     if (itemStatuses[item.id]) {
       return itemStatuses[item.id];
     }
-    console.log(`🔍 Getting status for item ${item.id}:`, item);
     // Backend status (nếu có)
     if (item.status && ORDER_STATUSES[item.status]) {
       return item.status;

@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-const SECRET = process.env.JWT_SECRET || "restaurant_secret";
+const SECRET = "restaurant_secret";
 
 // ACCESS TOKEN
 exports.generateAccessToken = (user) => {
@@ -10,7 +10,7 @@ exports.generateAccessToken = (user) => {
       role: user.role
     },
     SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "6h" }
   );
 };
 
