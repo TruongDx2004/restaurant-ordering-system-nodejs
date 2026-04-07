@@ -21,7 +21,6 @@ Module dành cho nhân viên nhà hàng để quản lý đơn hàng và bàn.
   - **AVAILABLE**: Trống (màu xanh lá)
   - **OCCUPIED**: Có khách (màu đỏ)
   - **RESERVED**: Đã đặt (màu vàng)
-  - **MAINTENANCE**: Bảo trì (màu xám)
 - Lọc bàn theo trạng thái
 - Tìm kiếm theo số bàn hoặc khu vực
 - Hiển thị thông tin sức chứa và khu vực
