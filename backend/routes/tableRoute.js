@@ -10,7 +10,7 @@ const responseHandler = require("../utils/responseHandler");
 router.post("/", checkLogin, checkRole("ADMIN"), tableValidator.create, validate, async function (req, res, next) {
     try {
         const table = await tableController.CreateTable(req.body);
-        return responseHandler.success(res, table, "Table created successfully");
+        return responseHandler.success(res, table, "Bàn được tạo thành công");
     } catch (err) {
         return responseHandler.error(res, err.message, 400);
     }
@@ -20,7 +20,7 @@ router.post("/", checkLogin, checkRole("ADMIN"), tableValidator.create, validate
 router.put("/:id", checkLogin, checkRole("ADMIN"), tableValidator.update, validate, async function (req, res, next) {
     try {
         const table = await tableController.UpdateTable(req.params.id, req.body);
-        return responseHandler.success(res, table, "Table updated successfully");
+        return responseHandler.success(res, table, "Bàn được cập nhật thành công");
     } catch (err) {
         return responseHandler.error(res, err.message, 400);
     }
@@ -30,7 +30,7 @@ router.put("/:id", checkLogin, checkRole("ADMIN"), tableValidator.update, valida
 router.delete("/:id", checkLogin, checkRole("ADMIN"), tableValidator.idParam, validate, async function (req, res, next) {
     try {
         await tableController.DeleteTable(req.params.id);
-        return responseHandler.success(res, null, "Table deleted successfully");
+        return responseHandler.success(res, null, "Bàn được xóa thành công");
     } catch (err) {
         return responseHandler.error(res, err.message, 400);
     }
@@ -43,7 +43,7 @@ router.patch("/:id/status", checkLogin, checkRole("ADMIN", "EMPLOYEE"), tableVal
         status = status.toUpperCase().trim();
 
         const table = await tableController.UpdateTableStatus(req.params.id, status);
-        return responseHandler.success(res, table, "Table status updated successfully");
+        return responseHandler.success(res, table, "Trạng thái bàn được cập nhật thành công");
     } catch (err) {
         return responseHandler.error(res, err.message, 400);
     }

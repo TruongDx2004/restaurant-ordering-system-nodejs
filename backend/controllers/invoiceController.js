@@ -35,7 +35,7 @@ const toResponse = (invoice) => ({
         unitPrice: Number(item.unitPrice),
         totalPrice: Number(item.totalPrice),
         status: item.status,
-        note: item.note
+        note: item.note || ""
     })) || []
 });
 
@@ -222,7 +222,7 @@ module.exports = {
                     where: {
                         invoiceId: invoice.id,
                         dishId: item.dishId,
-                        note: item.note,
+                        note: item.note || "" ,
                         status
                     },
                     transaction: t

@@ -3,9 +3,10 @@ const router = express.Router();
 const authController = require("../controllers/authController");
 const authHandler = require("../utils/authHandler");
 const responseHandler = require("../utils/responseHandler");
+const { validate, authValidator } = require("../utils/validateHandler");
 
 //POST api/auth/login
-router.post("/login", async function (req, res, next) {
+router.post("/login", authValidator.login, validate, async function (req, res, next) {
     try {
         const { email, password } = req.body;
         const user = await authController.Login(email, password);
@@ -31,7 +32,7 @@ router.post("/login", async function (req, res, next) {
 });
 
 //POST api/auth/refresh-token
-router.post("/refresh-token", async function (req, res, next) {
+router.post("/refresh-token", authValidator.refreshToken, validate, async function (req, res, next) {
     try {
         const { refreshToken } = req.body;
         if (!refreshToken) return responseHandler.error(res, "Lỗi khi đăng nhập", 400);

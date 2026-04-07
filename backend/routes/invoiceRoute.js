@@ -24,6 +24,7 @@ router.post("/create-with-items", invoiceValidator.createWithItems, validate, as
         const invoice = await controller.CreateInvoiceWithItems(tableId, items);
         return responseHandler.success(res, controller.ToResponse(invoice));
     } catch (err) {
+        console.error("Error creating invoice with items:", err);
         return responseHandler.error(res, err.message, 400);
     }
 });

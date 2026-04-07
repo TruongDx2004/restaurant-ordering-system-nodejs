@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const categoryController = require("../controllers/categoryController");
 const { checkLogin, checkRole } = require("../utils/authHandler");
+const { validate, categoryValidator } = require("../utils/validateHandler");
 const responseHandler = require("../utils/responseHandler");
 
 //GET api/categories
@@ -15,7 +16,7 @@ router.get("/", async function (req, res, next) {
 });
 
 //GET api/categories/:id
-router.get("/:id", async function (req, res, next) {
+router.get("/:id", categoryValidator.getById, validate, async function (req, res, next) {
     try {
         const category = await categoryController.GetCategoryById(req.params.id);
         return responseHandler.success(res, category, "Danh mục được lấy thành công");
@@ -25,7 +26,7 @@ router.get("/:id", async function (req, res, next) {
 });
 
 //GET api/categories/name/:name
-router.get("/name/:name", async function (req, res, next) {
+router.get("/name/:name", categoryValidator.getByName, validate, async function (req, res, next) {
     try {
         const category = await categoryController.GetCategoryByName(req.params.name);
         return responseHandler.success(res, category, "Danh mục được lấy thành công");
@@ -35,7 +36,7 @@ router.get("/name/:name", async function (req, res, next) {
 });
 
 //POST api/categories
-router.post("/", checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+router.post("/", checkLogin, checkRole("ADMIN"), categoryValidator.create, validate, async function (req, res, next) {
     try {
         const { name } = req.body;
         const newCategory = await categoryController.CreateCategory(name);
@@ -46,7 +47,7 @@ router.post("/", checkLogin, checkRole("ADMIN"), async function (req, res, next)
 });
 
 //PUT api/categories/:id
-router.put("/:id", checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+router.put("/:id", checkLogin, checkRole("ADMIN"), categoryValidator.update, validate, async function (req, res, next) {
     try {
         const updatedCategory = await categoryController.UpdateCategory(req.params.id, req.body);
         return responseHandler.success(res, updatedCategory, "Danh mục chỉnh sửa thành công");
@@ -56,7 +57,7 @@ router.put("/:id", checkLogin, checkRole("ADMIN"), async function (req, res, nex
 });
 
 //DELETE api/categories/:id
-router.delete("/:id", checkLogin, checkRole("ADMIN"), async function (req, res, next) {
+router.delete("/:id", checkLogin, checkRole("ADMIN"), categoryValidator.delete, validate, async function (req, res, next) {
     try {
         await categoryController.DeleteCategory(req.params.id);
         return responseHandler.success(res, null, "Xóa danh mục thành công");
