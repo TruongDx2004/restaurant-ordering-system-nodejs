@@ -69,7 +69,7 @@ const customerValidator = {
         body("password")
             .notEmpty().withMessage("Mật khẩu không được để trống")
             .isStrongPassword({
-                minLength: 6, // có thể giảm cho UX mobile
+                minLength: 6,
                 minLowercase: 1,
                 minUppercase: 0,
                 minNumbers: 1,
@@ -435,7 +435,7 @@ const messageValidator = {
         body("messageType")
             .optional()
             .customSanitizer(v => v.toUpperCase().trim())
-            .isIn(["TEXT", "ORDER", "NOTIFICATION"])
+            .isIn(["TEXT", "ORDER", "NOTIFICATION", "SYSTEM", "CALL_WAITER", "REQUEST_BILL", "QUICK_ACTION"])
             .withMessage("Loại message không hợp lệ")
             
     ],
@@ -453,7 +453,7 @@ const messageValidator = {
         body("messageType")
             .optional()
             .customSanitizer(v => v.toUpperCase().trim())
-            .isIn(["TEXT", "ORDER", "NOTIFICATION"])
+            .isIn(["TEXT", "ORDER", "NOTIFICATION", "SYSTEM", "CALL_WAITER", "REQUEST_BILL", "QUICK_ACTION"])
             .withMessage("Loại message không hợp lệ")
     ],
 
@@ -482,7 +482,7 @@ const messageValidator = {
             .notEmpty().withMessage("messageType không được để trống")
             .bail()
             .customSanitizer(v => v.toUpperCase().trim())
-            .isIn(["TEXT", "ORDER", "NOTIFICATION"])
+            .isIn(["TEXT", "ORDER", "NOTIFICATION", "SYSTEM", "CALL_WAITER", "REQUEST_BILL", "QUICK_ACTION"])
             .withMessage("Loại message không hợp lệ")
     ],
 
@@ -521,7 +521,7 @@ const messageValidator = {
         query("messageType")
             .optional()
             .customSanitizer(v => v.toUpperCase().trim())
-            .isIn(["TEXT", "ORDER", "NOTIFICATION"])
+            .isIn(["TEXT", "ORDER", "NOTIFICATION", "SYSTEM", "CALL_WAITER", "REQUEST_BILL", "QUICK_ACTION"])
             .withMessage("Loại message không hợp lệ")
     ]
 };

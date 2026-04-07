@@ -26,7 +26,6 @@ const TableManagement = () => {
     AVAILABLE: { label: 'Trống', color: '#27ae60', icon: 'fa-check-circle' },
     OCCUPIED: { label: 'Khách', color: '#e74c3c', icon: 'fa-users' },
     RESERVED: { label: 'Đặt', color: '#f39c12', icon: 'fa-bookmark' },
-    MAINTENANCE: { label: 'Bảo trì', color: '#95a5a6', icon: 'fa-tools' }
   };
 
   /**

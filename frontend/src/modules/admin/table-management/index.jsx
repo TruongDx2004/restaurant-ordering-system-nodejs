@@ -152,7 +152,6 @@ const TableManagement = () => {
       case 'AVAILABLE': return 'Trống';
       case 'OCCUPIED': return 'Đang dùng';
       case 'RESERVED': return 'Đã đặt';
-      case 'MAINTENANCE': return 'Bảo trì';
       default: return status;
     }
   };
@@ -255,7 +254,6 @@ const TableManagement = () => {
             <option value="AVAILABLE">Trống</option>
             <option value="OCCUPIED">Đang dùng</option>
             <option value="RESERVED">Đã đặt</option>
-            <option value="MAINTENANCE">Bảo trì</option>
           </select>
         </div>
 
@@ -375,7 +373,6 @@ const TableManagement = () => {
                   <option value="AVAILABLE">Trống</option>
                   <option value="OCCUPIED">Đang dùng</option>
                   <option value="RESERVED">Đã đặt</option>
-                  <option value="MAINTENANCE">Bảo trì</option>
                 </select>
               </div>
             </div>

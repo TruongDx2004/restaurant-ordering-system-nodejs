@@ -97,13 +97,13 @@ const LoginPage = () => {
   const handleDemoLogin = (role) => {
     if (role === 'admin') {
       setFormData({
-        email: 'admin@restaurant.com',
-        password: 'admin123'
+        email: 'doanxuantruong@gmail.com',
+        password: '123456'
       });
     } else {
       setFormData({
         email: 'employee@restaurant.com',
-        password: 'emp123'
+        password: '123456'
       });
     }
   };
@@ -281,51 +281,6 @@ const LoginPage = () => {
               </button>
             </form>
 
-            {/* Divider */}
-            <div className={styles.divider}>
-              <span>Hoặc sử dụng tài khoản demo</span>
-            </div>
-
-            {/* Demo Accounts */}
-            <div className={styles.demoSection}>
-              <div className={styles.demoButtons}>
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin('admin')}
-                  className={`${styles.demoButton} ${styles.adminDemo}`}
-                  disabled={loading}
-                >
-                  <div className={styles.demoIcon}>
-                    <i className="fas fa-user-shield"></i>
-                  </div>
-                  <div className={styles.demoInfo}>
-                    <strong>Admin</strong>
-                    <small>admin@restaurant.com</small>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin('employee')}
-                  className={`${styles.demoButton} ${styles.employeeDemo}`}
-                  disabled={loading}
-                >
-                  <div className={styles.demoIcon}>
-                    <i className="fas fa-user-tie"></i>
-                  </div>
-                  <div className={styles.demoInfo}>
-                    <strong>Employee</strong>
-                    <small>employee@restaurant.com</small>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* Help Text */}
-            <div className={styles.helpText}>
-              <i className="fas fa-info-circle"></i>
-              <span>Click vào tài khoản demo để tự động điền thông tin đăng nhập</span>
-            </div>
           </div>
         </div>
       </div>

@@ -146,7 +146,6 @@ export const TableModal = ({ table, onSave, onClose }) => {
                 <option value="AVAILABLE">Trống</option>
                 <option value="OCCUPIED">Đang dùng</option>
                 <option value="RESERVED">Đã đặt</option>
-                <option value="MAINTENANCE">Bảo trì</option>
               </select>
             </div>
           </div>

@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import styles from './Banner.module.css';
 
-/**
- * Banner Component
- * Banner với hero image và promotional slider
- */
+const SERVER_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8080';
+
 export const Banner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
-  // Promotional slides
+
   const slides = [
-    '/storage/dish/ad1.jpg',
-    '/storage/dish/ad2.jpg',
-    '/storage/dish/ad3.jpg'
+    `${SERVER_URL}/uploads/promo1.png`,
+    `${SERVER_URL}/uploads/promo2.png`,
+    `${SERVER_URL}/uploads/promo3.png`
   ];
 
   useEffect(() => {
@@ -32,41 +29,34 @@ export const Banner = () => {
     <section className={styles.banner}>
       {/* Hero Banner */}
       <div className={styles.heroBanner}>
-        <img 
-          src="/storage/dish/banner.jpg" 
-          alt="Restaurant Banner" 
+        <img
+          src={`${SERVER_URL}/uploads/hero.png`}
+          alt="Restaurant Banner"
           className={styles.heroImage}
         />
-        <div className={styles.heroOverlay}>
-          <div className={styles.heroText}>
-            <h2 className={styles.heroTitle}>Chào mừng đến với</h2>
-            <h1 className={styles.heroSubtitle}>Nhà hàng của chúng tôi!</h1>
-            <p className={styles.heroDescription}>
-              Thưởng thức những món ăn ngon nhất ngay hôm nay.
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Promotional Slider */}
       <div className={styles.promotionSection}>
         <div className={styles.slider}>
-          <div className={styles.slides}>
+          <div
+            className={styles.slides}
+            style={{ transform: `translateX(-${currentSlide * 120}%)` }}
+          >
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className={`${styles.slide} ${index === currentSlide ? styles.active : ''}`}
-                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                className={styles.slide}
               >
-                <img 
-                  src={slide} 
+                <img
+                  src={slide}
                   alt={`Promotion ${index + 1}`}
                   className={styles.slideImage}
                 />
               </div>
             ))}
           </div>
-          
+
           {/* Navigation Dots */}
           <div className={styles.dots}>
             {slides.map((_, index) => (

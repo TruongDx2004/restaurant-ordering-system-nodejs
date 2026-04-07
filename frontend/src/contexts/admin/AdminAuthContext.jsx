@@ -16,7 +16,7 @@ export const AdminAuthProvider = ({ children }) => {
 
   // Load user from localStorage on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem('adminToken');
     const storedRefreshToken = localStorage.getItem('adminRefreshToken');
     const storedUser = localStorage.getItem('adminUser');
 
@@ -88,6 +88,8 @@ export const AdminAuthProvider = ({ children }) => {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminRefreshToken');
       localStorage.removeItem('adminUser');
+
+      window.location.href = "/admin/login";
     }
   };
 
@@ -130,7 +132,7 @@ export const AdminAuthProvider = ({ children }) => {
    * Check if user is authenticated
    */
   const isAuthenticated = () => {
-    return !!user && !!token;
+    return !!token && !!user?.id;
   };
 
   /**

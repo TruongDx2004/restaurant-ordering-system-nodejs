@@ -10,7 +10,6 @@ import { useAdminAuth } from '../contexts/admin/AdminAuthContext';
 const ProtectedAdminRoute = ({ children, requiredRole = null }) => {
   const { isAuthenticated, user, loading, hasRole } = useAdminAuth();
 
-  // Show loading state
   if (loading) {
     return (
       <div style={{
@@ -28,55 +27,14 @@ const ProtectedAdminRoute = ({ children, requiredRole = null }) => {
     );
   }
 
-  // Check authentication
   if (!isAuthenticated()) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // Check required role if specified
-  if (requiredRole && !hasRole(requiredRole)) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: '#f5f6fa',
-        padding: '20px'
-      }}>
-        <div style={{
-          background: 'white',
-          padding: '40px',
-          borderRadius: '12px',
-          textAlign: 'center',
-          maxWidth: '400px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-        }}>
-          <i className="fas fa-lock" style={{ fontSize: '48px', color: '#e74c3c', marginBottom: '20px' }}></i>
-          <h2 style={{ color: '#2c3e50', marginBottom: '10px' }}>Không có quyền truy cập</h2>
-          <p style={{ color: '#7f8c8d', marginBottom: '20px' }}>
-            Bạn không có quyền truy cập trang này. Yêu cầu quyền: {requiredRole}
-          </p>
-          <button
-            onClick={() => window.history.back()}
-            style={{
-              padding: '10px 20px',
-              background: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            Quay lại
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (requiredRole && user.role !== requiredRole) {
+  return <Navigate to="/admin/login" replace />;
+}
 
-  // Render protected content
   return children;
 };
 

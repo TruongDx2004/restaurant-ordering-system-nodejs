@@ -60,7 +60,7 @@ export const Messages = ({ onClose }) => {
 
   const quickActions = [
     { text: 'Gọi nhân viên', type: 'CALL_WAITER' },
-    { text: 'Thanh toán', type: 'REQUEST_BILL' },
+    { text: 'Thêm đồ ăn kèm', type: 'QUICK_ACTION' },
     { text: 'Thêm nước đá', type: 'QUICK_ACTION' },
     { text: 'Thêm khăn giấy', type: 'QUICK_ACTION' },
     { text: 'Đổi bàn', type: 'QUICK_ACTION' }

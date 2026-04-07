@@ -34,27 +34,12 @@ const useNotifications = (recipientType, recipientId) => {
     useEffect(() => {
         if (!recipientType || !recipientId) return;
 
-        // 1. Subscribe to specific notifications
-        const topic = recipientType === 'USER' 
-            ? '/queue/notifications' 
-            : `/topic/notifications/${recipientId}`;
-            
-        const unsubscribeSpecific = webSocketService.subscribe(topic, (newNotification) => {
-            // Đảm bảo mapping đúng trường isRead
-            const normalized = {
-                ...newNotification,
-                isRead: newNotification.isRead || newNotification.read || false
-            };
-            handleNewNotification(normalized);
-        });
-
-        // 2. Subscribe to global notifications (for recipientType ALL)
         const unsubscribeGlobal = webSocketService.subscribe('/topic/notifications', (msg) => {
-            // Chuẩn hóa dữ liệu từ WebSocket message sang Notification object
+            console.log('[Notification] Received global notification:', msg);
             const normalizedNotif = {
                 id: msg.data?.id || Date.now(),
-                title: msg.title || msg.type,
-                message: msg.content,
+                title: msg.data?.title || msg.type,
+                message: msg.message,
                 type: msg.type,
                 data: msg.data,
                 isRead: false,
@@ -64,7 +49,6 @@ const useNotifications = (recipientType, recipientId) => {
         });
 
         return () => {
-            unsubscribeSpecific();
             unsubscribeGlobal();
         };
     }, [recipientType, recipientId, fetchNotifications]);
@@ -84,10 +68,10 @@ const useNotifications = (recipientType, recipientId) => {
     const markAsRead = async (id) => {
         try {
             await notificationApi.markAsRead(id);
+            setUnreadCount(prev => Math.max(0, prev - 1));
             setNotifications(prev => 
                 prev.map(n => n.id === id ? { ...n, isRead: true } : n)
             );
-            setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (err) {
             console.error('Error marking notification as read:', err);
         }

@@ -22,7 +22,6 @@ const NotificationList = ({ recipientType, recipientId }) => {
         deleteNotification
     } = useNotifications(recipientType, recipientId);
 
-    // Phân loại thông báo dựa trên nội dung
     const categorizedNotifications = useMemo(() => {
         const categories = {
             [NOTIFICATION_TYPES.PAYMENT]: [],
@@ -41,7 +40,7 @@ const NotificationList = ({ recipientType, recipientId }) => {
             }
 
             // Áp dụng bộ lọc "Chưa đọc"
-            if (!filterUnread || !n.read) {
+            if (!filterUnread || !n.isRead) {
                 categories[targetCategory].push(n);
             }
         });
@@ -64,14 +63,14 @@ const NotificationList = ({ recipientType, recipientId }) => {
     }, [notifications, filterUnread]);
 
     const getUnreadCount = (type = null) => {
-        if (!type) return notifications.filter(n => !n.read).length;
+        if (!type) return notifications.filter(n => !n.isRead).length;
         return notifications.filter(n => {
             const isType = type === NOTIFICATION_TYPES.PAYMENT
                 ? (n.title + n.message).toLowerCase().match(/thanh toán|tiền mặt|ví/)
                 : type === NOTIFICATION_TYPES.ORDER
                     ? (n.title + n.message).toLowerCase().match(/đơn hàng|gọi món/)
                     : !(n.title + n.message).toLowerCase().match(/thanh toán|tiền mặt|ví|đơn hàng|gọi món/);
-            return isType && !n.read;
+            return isType && !n.isRead;
         }).length;
     };
 

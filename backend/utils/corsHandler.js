@@ -2,12 +2,12 @@ const cors = require("cors");
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://192.168.1.148:5173"
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
 
-    // cho phép request không có origin (Postman, curl)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
