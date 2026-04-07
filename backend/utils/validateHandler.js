@@ -541,14 +541,14 @@ const notificationValidator = {
     ],
 
     getByRecipient: [
-        param("recipientType")
+        query("recipientType")
             .notEmpty().withMessage("recipientType không được để trống")
             .bail()
             .customSanitizer(v => v.toUpperCase().trim())
             .isIn(["ALL", "TABLE", "USER"])
             .withMessage("recipientType không hợp lệ"),
 
-        param("recipientId").custom((value, { req }) => {
+        query("recipientId").custom((value, { req }) => {
             const type = req.params.recipientType;
 
             if (type !== "ALL") {
@@ -561,14 +561,14 @@ const notificationValidator = {
     ],
 
     getUnread: [
-        param("recipientType")
+        query("recipientType")
             .notEmpty().withMessage("recipientType không được để trống")
             .bail()
             .customSanitizer(v => v.toUpperCase().trim())
             .isIn(["ALL", "TABLE", "USER"])
             .withMessage("recipientType không hợp lệ"),
 
-        param("recipientId").custom((value, { req }) => {
+        query("recipientId").custom((value, { req }) => {
             const type = req.params.recipientType;
 
             if (type !== "ALL") {

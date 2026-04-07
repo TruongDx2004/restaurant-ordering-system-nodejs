@@ -184,11 +184,6 @@ const EmployeeLayout = () => {
               >
                 <div className={styles.iconWrapper}>
                   <i className={`fas ${item.icon}`}></i>
-                  {item.badge > 0 && (
-                    <span className={styles.sidebarBadge}>
-                      {item.badge > 99 ? '99+' : item.badge}
-                    </span>
-                  )}
                 </div>
                 <span>{item.shortLabel}</span>
               </Link>

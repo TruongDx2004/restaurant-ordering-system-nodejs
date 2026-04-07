@@ -192,7 +192,7 @@ module.exports = {
                 title: "Xác nhận thanh toán",
                 message: `Hóa đơn #${invoice.id} (Bàn ${invoice.tableId}) đã được xác nhận thanh toán thành công.`,
                 type: "PAYMENT_SUCCESS",
-                recipientType: "ALL",
+                recipientType: "USER",
                 data: { invoiceId: invoice.id, tableId: invoice.tableId }
             });
 

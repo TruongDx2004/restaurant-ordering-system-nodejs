@@ -9,7 +9,7 @@ import styles from './index.module.css';
  * Mapping with backend InvoiceItemStatus: WAITING, PREPARING, SERVED, CANCELLED
  */
 const OrderProcessing = () => {
-  const { showAlert } = useModal();
+  const { showAlert, showConfirm } = useModal();
   const [orders, setOrders] = useState([]);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -259,7 +259,9 @@ const OrderProcessing = () => {
                             <button 
                               className={styles.cancelIconBtn}
                               onClick={() => {
-                                if(window.confirm('Hủy món này?')) handleUpdateStatus(item.id, 'CANCELLED')
+                                showConfirm('Xác nhận hủy món này?', () => {
+                                  handleUpdateStatus(item.id, 'CANCELLED');
+                                });
                               }}
                               title="Hủy món"
                             >

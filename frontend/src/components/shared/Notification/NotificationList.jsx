@@ -118,9 +118,6 @@ const NotificationList = ({ recipientType, recipientId }) => {
                         <span className={styles.tabLabel}>
                             {type === NOTIFICATION_TYPES.PAYMENT ? 'Thanh toán' : type === NOTIFICATION_TYPES.SYSTEM ? 'Hệ thống' : 'Đơn hàng'}
                         </span>
-                        {getUnreadCount(type) > 0 && (
-                            <span className={styles.badge}>{getUnreadCount(type)}</span>
-                        )}
                     </button>
                 ))}
             </div>
