@@ -17,21 +17,24 @@ export const useMessages = (tableId, invoiceId) => {
    * Lấy lịch sử tin nhắn của bàn
    */
   const fetchMessages = useCallback(async () => {
-    if (!tableId) return;
-
+    if (!invoiceId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
     try {
-      const response = await messageApi.getByTable(tableId);
+      const response = await messageApi.getByInvoice(invoiceId);
       
       if (response && response.success) {
         setMessages(response.data || []);
       }
     } catch (err) {
-      console.error('Error fetching messages:', err);
+      console.error('Lỗi khi tải tin nhắn:', err);
       setError('Không thể tải tin nhắn');
     } finally {
       setLoading(false);
     }
-  }, [tableId]);
+  }, [invoiceId]);
 
   useEffect(() => {
     tableIdRef.current = tableId;
@@ -48,13 +51,13 @@ export const useMessages = (tableId, invoiceId) => {
     
     const unsubscribe = webSocketService.subscribe(`/topic/chat/${tableId}`, (message) => {
       console.log(`[Socket] Received message for table ${tableId}:`, message);
-      if (message.tableId === tableIdRef.current || message.tableId == tableIdRef.current) {
+      if (message.tableId == tableIdRef.current) {
         fetchMessages();
       }
     });
 
     return () => unsubscribe();
-  }, [tableId]);
+  }, [tableId, fetchMessages]);
 
   /**
    * Gửi tin nhắn mới

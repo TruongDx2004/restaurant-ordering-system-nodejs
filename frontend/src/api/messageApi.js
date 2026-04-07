@@ -44,6 +44,18 @@ export const messageApi = {
   },
 
   /**
+   * Lấy lịch sử tin nhắn của một hóa đơn
+   * @param {number} invoiceId
+   */
+  getByInvoice: async (invoiceId) => {
+    try {
+      const response = await axios.get(`/messages/invoice/${invoiceId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+  /**
    * Xóa tin nhắn
    */
   delete: async (id) => {

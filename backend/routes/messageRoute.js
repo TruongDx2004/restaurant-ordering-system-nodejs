@@ -24,7 +24,15 @@ router.get("/conversations", checkLogin, async function (req, res, next) {
         return responseHandler.error(res, err.message, 400);
     }
 });
-
+//Get api/messages/invoice/:invoiceId
+router.get("/invoice/:invoiceId", checkLogin, messageValidator.getByInvoice, validate, async function (req, res, next) {
+    try {
+        const data = await messageController.GetMessagesByInvoice(req.params.invoiceId);
+        return responseHandler.success(res, data, "Tin nhắn được lấy thành công");
+    } catch (err) {
+        return responseHandler.error(res, err.message, 400);
+    } 
+});
 //Get api/messages/table/:tableId
 router.get("/table/:tableId", checkLogin, messageValidator.getByTable, validate, async function (req, res, next) {
     try {

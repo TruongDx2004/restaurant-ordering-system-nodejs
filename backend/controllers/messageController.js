@@ -40,11 +40,18 @@ module.exports = {
                 id: table.id,
                 sender: lastMsg ? lastMsg.sender : null,
                 tableNumber: table.tableNumber,
-                status: table.status, // AVAILABLE, OCCUPIED, v.v.
+                status: table.status,
                 lastMessage: lastMsg ? lastMsg.content : "Chưa có tin nhắn",
                 lastTime: lastMsg ? lastMsg.createdAt : null,
                 unreadCount: 0
             };
+        });
+    },
+
+    GetMessagesByInvoice: async function (invoiceId) {
+        return await Message.findAll({
+            where: { invoiceId },
+            order: [["created_at", "ASC"]]
         });
     },
 

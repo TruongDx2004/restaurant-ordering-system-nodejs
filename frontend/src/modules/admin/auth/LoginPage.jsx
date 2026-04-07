@@ -169,7 +169,7 @@ const LoginPage = () => {
 
           {/* Footer */}
           <div className={styles.brandingFooter}>
-            <p>© 2024 Restaurant Management System</p>
+            <p>© 2026 Restaurant Management System</p>
             <p className={styles.version}>Version 2.0 - Desktop Edition</p>
           </div>
         </div>

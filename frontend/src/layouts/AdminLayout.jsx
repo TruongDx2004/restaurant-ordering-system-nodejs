@@ -218,7 +218,7 @@ const AdminLayout = ({ children }) => {
 
         {/* Footer */}
         <footer className={styles.footer}>
-          <p>© 2024 Restaurant Management System. All rights reserved.</p>
+          <p>© 2026 Restaurant Management System. All rights reserved.</p>
         </footer>
       </div>
 

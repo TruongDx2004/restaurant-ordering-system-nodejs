@@ -39,9 +39,8 @@ const Invoice = () => {
     console.log(`[Invoice] Subscribing to updates for invoice ${invoice.id}`);
 
     const unsubscribePayment = webSocketService.subscribe('/topic/payments', (message) => {
-      console.log('[Invoice] Payment update received:', message);
-      if (message.invoiceId === invoice.id || message.invoiceId == invoice.id) {
-        if (message.data === 'SUCCESS' || message.data === 'PAID') {
+      if (message.invoiceId === invoice.id) {
+        if (message.data === 'PAID') {
           showToast('Thanh toán thành công!', 'success');
           setTimeout(() => {
             navigate('/customer/payment-result', {
@@ -53,7 +52,7 @@ const Invoice = () => {
                 message: 'Thanh toán tiền mặt thành công'
               }
             });
-          }, 500);
+          }, 10);
         } else {
           showToast(`Trạng thái hóa đơn: ${message.data}`, 'info');
         }
@@ -185,7 +184,7 @@ const Invoice = () => {
             message: 'Thanh toán thành công'
           }
         });
-      }, 2000);
+      }, 100);
     } else {
       showToast(result.error || 'Thanh toán thất bại!', 'error');
     }
